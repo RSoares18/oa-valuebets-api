@@ -6,10 +6,11 @@ public class Odd {
     private String bookmaker_name;
     private double latest;
     private double opening;
+    private double peak;
     private boolean is_value;
     private double value;
 
-    public Odd(long bookmaker_id, String bookmaker_name, double latest, double opening, boolean is_value, double value) {
+    public Odd(long bookmaker_id, String bookmaker_name, double latest, double opening, boolean is_value, double value, double peak) {
         this.bookmaker_id = bookmaker_id;
         this.bookmaker_name = bookmaker_name;
         this.latest = latest;
@@ -19,6 +20,14 @@ public class Odd {
     }
 
     public Odd(){}
+
+    public double getPeak() {
+        return peak;
+    }
+
+    public void setPeak(double peak) {
+        this.peak = peak;
+    }
 
     public long getBookmaker_id() {
         return bookmaker_id;

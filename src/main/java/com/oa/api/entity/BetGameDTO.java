@@ -35,11 +35,15 @@ public class BetGameDTO implements Serializable {
     @Nullable
     private Double opening_1xbet_odds;
     @Nullable
+    private Double peak_1xbet_odds;
+    @Nullable
     private boolean isValue_1xbet;
     @Nullable
     private Double value_1xbet;
     @Nullable
     private Double latest_pinnacle_odds;
+    @Nullable
+    private Double peak_pinnacle_odds;
     @Nullable
     private Double opening_pinnacle_odds;
     @Nullable
@@ -51,13 +55,17 @@ public class BetGameDTO implements Serializable {
     @Nullable
     private Double opening_b365_odds;
     @Nullable
+    private Double peak_b365_odds;
+    @Nullable
     private boolean isValue_b365;
     @Nullable
     private Double value_b365;
     @Nullable
-    private Double best_odds;
+    private Double latest_odds;
     @Nullable
     private Double our_odds;
+    @Nullable
+    private Double peak_odds;
     @Nullable
     private Double value_percentage;
     @Nullable
@@ -322,11 +330,11 @@ public class BetGameDTO implements Serializable {
     }
 
     public Double getBest_odds() {
-        return best_odds;
+        return latest_odds;
     }
 
-    public void setBest_odds(Double best_odds) {
-        this.best_odds = best_odds;
+    public void setLatest_odds(Double latest_odds) {
+        this.latest_odds = latest_odds;
     }
 
     public Double getOur_odds() {
@@ -367,5 +375,58 @@ public class BetGameDTO implements Serializable {
 
     public void setScore(String score) {
         this.score = score;
+    }
+
+    @Nullable
+    public Double getPeak_odds() {
+        return peak_odds;
+    }
+
+    public void setPeak_odds(@Nullable Double peak_odds) {
+        this.peak_odds = peak_odds;
+    }
+
+    @Nullable
+    public Double getPeak_1xbet_odds() {
+        return peak_1xbet_odds;
+    }
+
+    public void setPeak_1xbet_odds(@Nullable Double peak_1xbet_odds) {
+        this.peak_1xbet_odds = peak_1xbet_odds;
+    }
+
+    public void setValue_1xbet(boolean value_1xbet) {
+        isValue_1xbet = value_1xbet;
+    }
+
+    @Nullable
+    public Double getPeak_pinnacle_odds() {
+        return peak_pinnacle_odds;
+    }
+
+    public void setPeak_pinnacle_odds(@Nullable Double peak_pinnacle_odds) {
+        this.peak_pinnacle_odds = peak_pinnacle_odds;
+    }
+
+    public void setValue_pinnacle(boolean value_pinnacle) {
+        isValue_pinnacle = value_pinnacle;
+    }
+
+    @Nullable
+    public Double getPeak_b365_odds() {
+        return peak_b365_odds;
+    }
+
+    public void setPeak_b365_odds(@Nullable Double peak_b365_odds) {
+        this.peak_b365_odds = peak_b365_odds;
+    }
+
+    public void setValue_b365(boolean value_b365) {
+        isValue_b365 = value_b365;
+    }
+
+    @Nullable
+    public Double getLatest_odds() {
+        return latest_odds;
     }
 }

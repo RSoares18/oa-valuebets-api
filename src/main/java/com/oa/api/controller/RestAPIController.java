@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -46,6 +48,19 @@ public class RestAPIController {
     @Autowired
     UpcomingBetService upcomingBetService;
 
+    private DefaultBotSession botSession;
+
+    @PostConstruct
+    public void init(){
+        try {
+            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+            botSession = (DefaultBotSession) botsApi.registerBot(telegramBot);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @GetMapping(value ="/results")
     public List<HashMap<String, Object>> getResults(){
         int existingRecords = betGameService.getTotalRecords();
@@ -67,11 +82,13 @@ public class RestAPIController {
         List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
         registerBot(telegramBot);
         telegramBot.chunkMessage(upcomingBets);
+        telegramBot.onClosing();
         return upcomingBets;
     }
 
     @GetMapping(value ="/allUpcoming")
     public List<UpcomingBet> getUpcoming() throws UnsupportedEncodingException {
+        log.info("Get All Upcoming Requests");
         String uri = "https://oddalerts.com/value-bets?export=upcoming&key=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
         RestTemplate restTemplate = new RestTemplate();
         List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
@@ -82,9 +99,11 @@ public class RestAPIController {
         for(FilterRequest filterRequest : allRequests){
             upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
         }
-
-        registerBot(telegramBot);
+        if(!botSession.isRunning()){
+            registerBot(telegramBot);
+        }
         telegramBot.chunkMessage(upcomingBets);
+        telegramBot.onClosing();
         return upcomingBets;
     }
 
@@ -106,7 +125,7 @@ public class RestAPIController {
     private void registerBot(OABot bot){
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(bot);
+            botSession = (DefaultBotSession) botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -114,7 +133,10 @@ public class RestAPIController {
 
     @Scheduled (cron="0 0/15 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
-        log.info("Starting upcoming request...");
+        if(!botSession.isRunning()){
+            registerBot(telegramBot);
+        }
+        log.info("Starting scheduled upcoming request...");
         UpcomingRequests requests = new UpcomingRequests();
         List<FilterRequest> allRequests = requests.getAllRequests();
 

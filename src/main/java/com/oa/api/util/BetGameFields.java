@@ -16,7 +16,8 @@ public enum BetGameFields {
     CORNERS("corners"), //integer
     COMPETITION("competition"), //linkedhashmap
     ODDS("odds"), //arraylist
-    BEST_ODDS("best_odds"),
+    LATEST_ODDS("latest_odds"),
+    PEAK_ODDS("peak_odds"),
     OUR_ODDS("our_odds"), //double
     VALUE("value"), //double
     PROBABILITY("probability"), //double
@@ -39,8 +40,9 @@ public enum BetGameFields {
     //BOOKMAKER HASHMAP
     BOOKMAKER_ID("bookmaker_id"),
     BOOKMAKER_NAME("bookmaker_name"),
-    LATEST_ODDS("latest"),
-    OPENING_ODDS("opening"),
+    BOOKMAKER_LATEST_ODDS("latest"),
+    BOOKMAKER_OPENING_ODDS("opening"),
+    BOOKMAKER_PEAK_ODDS("peak"),
     BOOKMAKER_IS_VALUE("is_value"),
     BOOKMAKER_VALUE("value");
 

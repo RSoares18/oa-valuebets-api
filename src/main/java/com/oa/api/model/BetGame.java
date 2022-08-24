@@ -19,6 +19,7 @@ public class BetGame {
     private Competition competition;
     private List<Odd> odds;
     private String best_odds;
+    private String peak_odds;
     private double our_odds;
     private double value;
     private double probability;
@@ -28,7 +29,7 @@ public class BetGame {
 
     public BetGame(Long id, String market, String home_name, String away_name, String status, Long unix, String ko_human, int home_goals,
                    int away_goals, int home_played, int away_played, int corners, Competition competition, List<Odd> odds,
-                   String best_odds, double our_odds, double value, double probability, Result result) {
+                   String best_odds, double our_odds, double value, double probability, Result result, String peak_odds) {
         this.id = id;
         this.market = market;
         this.home_name = home_name;
@@ -45,9 +46,18 @@ public class BetGame {
         this.odds = odds;
         this.best_odds = best_odds;
         this.our_odds = our_odds;
+        this.peak_odds = peak_odds;
         this.value = value;
         this.probability = probability;
         this.result = result;
+    }
+
+    public String getPeak_odds() {
+        return peak_odds;
+    }
+
+    public void setPeak_odds(String peak_odds) {
+        this.peak_odds = peak_odds;
     }
 
     public Long getId() {
