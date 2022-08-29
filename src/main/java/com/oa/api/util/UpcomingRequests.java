@@ -11,7 +11,7 @@ public class UpcomingRequests {
     private List<FilterRequest> allRequests;
 
     public UpcomingRequests(){
-        allRequests = Arrays.asList(createOversRequest(), createUndersRequest(), createHomeWinsRequest());
+        allRequests = Arrays.asList(createOversRequest(), createUndersRequest(), createHomeWinsRequest(), createAwayWinsRequest());
     }
 
     public FilterRequest createOversRequest(){
@@ -61,6 +61,23 @@ public class UpcomingRequests {
         homeWinRequest.setKellyFactor(0.24);
         homeWinRequest.setMinGamesPlayed(3);
         return homeWinRequest;
+
+    }
+
+    public FilterRequest createAwayWinsRequest(){
+        FilterRequest awayWinRequest = new FilterRequest();
+        awayWinRequest.setMarket("away_win_probability");
+        awayWinRequest.setBookie("1xBet");
+        awayWinRequest.setCountCups(false);
+        awayWinRequest.setCountFriendlies(false);
+        awayWinRequest.setMinOdds(1.70);
+        awayWinRequest.setMaxOdds(10.00);
+        awayWinRequest.setMinProbability(0.00);
+        awayWinRequest.setMaxValue(10000.00);
+        awayWinRequest.setMinValue(0.00);
+        awayWinRequest.setKellyFactor(0.24);
+        awayWinRequest.setMinGamesPlayed(3);
+        return awayWinRequest;
 
     }
 

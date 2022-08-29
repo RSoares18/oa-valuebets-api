@@ -131,7 +131,7 @@ public class RestAPIController {
         }
     }
 
-    @Scheduled (cron="0 0/15 * * * *")
+    @Scheduled (cron="0 0/30 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
         if(!botSession.isRunning()){
             registerBot(telegramBot);
