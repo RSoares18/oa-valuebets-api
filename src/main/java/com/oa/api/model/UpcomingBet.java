@@ -17,8 +17,10 @@ public class UpcomingBet {
     private Double probability;
     private Double diffMovement;
     private String bookmaker;
+    private String competition;
 
-    public UpcomingBet(String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
+    public UpcomingBet(String competition,String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
+        this.competition = competition;
         this.diffMovement = diffMovement;
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
@@ -35,6 +37,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public String getCompetition() {
+        return competition;
+    }
+
+    public void setCompetition(String competition) {
+        this.competition = competition;
     }
 
     public String getBookmaker() {
@@ -149,6 +159,7 @@ public class UpcomingBet {
                 "\uD83D\uDCC6 " + dateKO +"\n" +
                 "\uD83D\uDCCA Market: " + market + "\n" +
                 "\uD83D\uDCDA Bookmaker: " + bookmaker + "\n" +
+                "\uD83C\uDFC6 " + competition +  "\n" +
                 "\u26BD " + homeTeam + " vs " + awayTeam + "\n" +
                 "\uD83D\uDCBB Probability: " + probability + "% " + "(" + ourOdds + ")" + "\n" +
                 "\u26A1 Current Odds: " + bookieOdds + " (" + diffMovement + "%) " + "\n" +

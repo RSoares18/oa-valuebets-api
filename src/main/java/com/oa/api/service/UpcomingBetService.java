@@ -164,6 +164,7 @@ public class UpcomingBetService {
         bet.setDateKO(betGameDTO.getKo_human());
         bet.setOpeningOdds(opening);
         bet.setBookmaker(bookie);
+        bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
         return bet;
     }
 

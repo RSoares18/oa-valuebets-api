@@ -22,11 +22,11 @@ public class UpcomingRequests {
         oversRequest.setCountFriendlies(false);
         oversRequest.setMinOdds(1.50);
         oversRequest.setMaxOdds(10.00);
-        oversRequest.setMinProbability(55.00);
+        oversRequest.setMinProbability(45.00);
         oversRequest.setMaxValue(10000.00);
-        oversRequest.setMinValue(10.00);
-        oversRequest.setKellyFactor(0.00);
-        oversRequest.setMinGamesPlayed(0);
+        oversRequest.setMinValue(0.00);
+        oversRequest.setKellyFactor(0.10);
+        oversRequest.setMinGamesPlayed(1);
         return oversRequest;
     }
 
@@ -53,12 +53,12 @@ public class UpcomingRequests {
         homeWinRequest.setBookie("1xBet");
         homeWinRequest.setCountCups(false);
         homeWinRequest.setCountFriendlies(false);
-        homeWinRequest.setMinOdds(1.70);
+        homeWinRequest.setMinOdds(2.50);
         homeWinRequest.setMaxOdds(10.00);
-        homeWinRequest.setMinProbability(0.00);
+        homeWinRequest.setMinProbability(40.00);
         homeWinRequest.setMaxValue(10000.00);
         homeWinRequest.setMinValue(0.00);
-        homeWinRequest.setKellyFactor(0.24);
+        homeWinRequest.setKellyFactor(0.25);
         homeWinRequest.setMinGamesPlayed(3);
         return homeWinRequest;
 
@@ -70,13 +70,13 @@ public class UpcomingRequests {
         awayWinRequest.setBookie("1xBet");
         awayWinRequest.setCountCups(false);
         awayWinRequest.setCountFriendlies(false);
-        awayWinRequest.setMinOdds(1.70);
+        awayWinRequest.setMinOdds(2.50);
         awayWinRequest.setMaxOdds(10.00);
-        awayWinRequest.setMinProbability(0.00);
+        awayWinRequest.setMinProbability(40.00);
         awayWinRequest.setMaxValue(10000.00);
         awayWinRequest.setMinValue(0.00);
-        awayWinRequest.setKellyFactor(0.24);
-        awayWinRequest.setMinGamesPlayed(3);
+        awayWinRequest.setKellyFactor(0.20);
+        awayWinRequest.setMinGamesPlayed(2);
         return awayWinRequest;
 
     }
