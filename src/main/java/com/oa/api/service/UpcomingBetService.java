@@ -70,6 +70,7 @@ public class UpcomingBetService {
         upcomingGames = upcomingGames.stream().filter(betGameDTO -> betGameDTO.getMarket().equals(request.getMarket())).collect(Collectors.toList());
 
         if(kellyFactor == 0.00){
+            Double openingKellyFactor = kellyFactor;
             for(BetGameDTO betGameDTO : upcomingGames){
                 bookie = request.getBookie();
                 if(criteriaMatch(betGameDTO,request)){
@@ -82,8 +83,8 @@ public class UpcomingBetService {
                     }
                     if(currentOdds != null && currentOdds > 0.00){
                         Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                        if(matchConditions(currentOdds, value, kellyFactor, request)){
-                            upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds,value, kellyFactor, bookie));
+                        if(matchConditions(currentOdds, value, kellyFactor, openingKellyFactor, request)){
+                            upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds,value, kellyFactor,openingKellyFactor, bookie));
                         }
                     }
 
@@ -93,6 +94,7 @@ public class UpcomingBetService {
             for(BetGameDTO betGameDTO : upcomingGames){
                 bookie = request.getBookie();
                 Double kellyFactorCalc = 0.0;
+                Double openingKellyFactorCalc = 0.0;
                 Double currentOdds = calculateLatestOdds(request.getBookie(), betGameDTO);
                 Double openingOdds = calculateOpeningOdds(request.getBookie(), betGameDTO);
                 if(request.getBookie().equals(Bookmakers.ONEXBET.getName()) && (currentOdds == null || currentOdds == 0.0)){
@@ -102,17 +104,24 @@ public class UpcomingBetService {
                 }
                 if(currentOdds != null && currentOdds > 0.00){
                     if(bookie.equals(Bookmakers.ONEXBET.getName())){
-                        kellyFactorCalc = calculateKellyFactor1xBet(betGameDTO);
+                        openingKellyFactorCalc = calculateKellyFactor1xBet(betGameDTO, true);
                     } else if(bookie.equals(Bookmakers.BET365.getName())){
-                        kellyFactorCalc = calculateKellyFactorBet365(betGameDTO);
+                        openingKellyFactorCalc = calculateKellyFactorBet365(betGameDTO, true);
                     } else if(bookie.equals(Bookmakers.PINNACLE.getName())){
-                        kellyFactorCalc = calculateKellyFactorPinnacle(betGameDTO);
+                        openingKellyFactorCalc = calculateKellyFactorPinnacle(betGameDTO, true);
+                    }
+                    if(bookie.equals(Bookmakers.ONEXBET.getName())){
+                        kellyFactorCalc = calculateKellyFactor1xBet(betGameDTO, false);
+                    } else if(bookie.equals(Bookmakers.BET365.getName())){
+                        kellyFactorCalc = calculateKellyFactorBet365(betGameDTO,false);
+                    } else if(bookie.equals(Bookmakers.PINNACLE.getName())){
+                        kellyFactorCalc = calculateKellyFactorPinnacle(betGameDTO,false);
                     }
                     if(criteriaMatch(betGameDTO,request)){
 
                             Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                            if(matchConditions(currentOdds, value, kellyFactorCalc, request) && bookie.equals(request.getBookie())){
-                                upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, bookie));
+                            if(matchConditions(currentOdds, value, kellyFactorCalc, openingKellyFactorCalc, request) && bookie.equals(request.getBookie())){
+                                upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, openingKellyFactorCalc,bookie));
                             }
                         }
                 }
@@ -150,7 +159,7 @@ public class UpcomingBetService {
         return BigDecimalRoundDoubleMain.roundDouble(((diff/opening)*100),2);
     }
 
-    private UpcomingBet convertBetGameToUpcoming(BetGameDTO betGameDTO, Double odds, Double opening,Double value, Double kellyFactor, String bookie){
+    private UpcomingBet convertBetGameToUpcoming(BetGameDTO betGameDTO, Double odds, Double opening,Double value, Double kellyFactor, Double openingKellyFactor, String bookie){
         UpcomingBet bet = new UpcomingBet();
         bet.setHomeTeam(betGameDTO.getHome_name());
         bet.setAwayTeam(betGameDTO.getAway_name());
@@ -165,6 +174,7 @@ public class UpcomingBetService {
         bet.setOpeningOdds(opening);
         bet.setBookmaker(bookie);
         bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
+        bet.setOpeningKellyFactor(openingKellyFactor);
         return bet;
     }
 
@@ -173,28 +183,28 @@ public class UpcomingBetService {
         return (diff/ourOdds) * 100.00;
     }
 
-    private boolean matchConditions(Double odds, Double value, Double kellyFactor, FilterRequest request){
+    private boolean matchConditions(Double odds, Double value, Double kellyFactor, Double openingKellyFactor, FilterRequest request){
         boolean oddsValue = odds >= request.getMinOdds() && odds <= request.getMaxOdds()
                 && value >= request.getMinValue() && value <= request.getMaxValue();
 
-        boolean kelly = kellyFactor == 0.00 || kellyFactor >= request.getKellyFactor();
+        boolean kelly = kellyFactor == 0.00 || (kellyFactor >= request.getKellyFactor() && openingKellyFactor >= request.getKellyFactor());
 
         return oddsValue && kelly;
 
     }
 
-    private Double calculateKellyFactor1xBet(BetGameDTO betGameDTO){
-        Double b_decimal_odds = betGameDTO.getLatest_1xbet_odds() -1.00;
+    private Double calculateKellyFactor1xBet(BetGameDTO betGameDTO, boolean calculateForOpening){
+        Double b_decimal_odds = calculateForOpening ? betGameDTO.getOpening_1xbet_odds() - 1.00 : betGameDTO.getLatest_1xbet_odds() -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
-    private Double calculateKellyFactorBet365(BetGameDTO betGameDTO){
-        Double b_decimal_odds = betGameDTO.getLatest_b365_odds() -1.00;
+    private Double calculateKellyFactorBet365(BetGameDTO betGameDTO, boolean calculateForOpening){
+        Double b_decimal_odds = calculateForOpening ? betGameDTO.getOpening_b365_odds() - 1.00 : betGameDTO.getLatest_b365_odds() -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
-    private Double calculateKellyFactorPinnacle(BetGameDTO betGameDTO){
-        Double b_decimal_odds = betGameDTO.getLatest_pinnacle_odds() -1.00;
+    private Double calculateKellyFactorPinnacle(BetGameDTO betGameDTO, boolean calculateForOpening){
+        Double b_decimal_odds = calculateForOpening ? betGameDTO.getOpening_pinnacle_odds() - 1.00 : betGameDTO.getLatest_pinnacle_odds() -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 

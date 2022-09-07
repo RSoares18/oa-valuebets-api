@@ -18,6 +18,7 @@ public class UpcomingBet {
     private Double diffMovement;
     private String bookmaker;
     private String competition;
+    private Double openingKellyFactor;
 
     public UpcomingBet(String competition,String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
         this.competition = competition;
@@ -37,6 +38,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public Double getOpeningKellyFactor() {
+        return openingKellyFactor;
+    }
+
+    public void setOpeningKellyFactor(Double openingKellyFactor) {
+        this.openingKellyFactor = openingKellyFactor;
     }
 
     public String getCompetition() {
@@ -165,6 +174,7 @@ public class UpcomingBet {
                 "\u26A1 Current Odds: " + bookieOdds + " (" + diffMovement + "%) " + "\n" +
                 "\u26AA Opening Odds: " + openingOdds + "\n" +
                 "\uD83D\uDCC8 Value: " + BigDecimalRoundDoubleMain.roundDouble(value,2) + "%" + "\n" +
-                "\uD83D\uDCCA Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n\n\n\n";
+                "\uD83D\uDCCA Opening Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(openingKellyFactor,3) + "\n" +
+                "\uD83D\uDCCA Current Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n\n\n\n";
     }
 }

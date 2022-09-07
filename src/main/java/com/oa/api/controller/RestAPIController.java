@@ -124,6 +124,7 @@ public class RestAPIController {
 
     private void registerBot(OABot bot){
         try {
+            botSession.stop();
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botSession = (DefaultBotSession) botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
@@ -133,9 +134,7 @@ public class RestAPIController {
 
     @Scheduled (cron="0 0/30 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
-        if(!botSession.isRunning()){
-            registerBot(telegramBot);
-        }
+        registerBot(telegramBot);
         log.info("Starting scheduled upcoming request...");
         UpcomingRequests requests = new UpcomingRequests();
         List<FilterRequest> allRequests = requests.getAllRequests();
