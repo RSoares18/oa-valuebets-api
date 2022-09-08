@@ -109,7 +109,6 @@ public class TestService {
                     } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
                         kellyFactorCalc = calculateKellyFactorPinnacle(betGameDTO, opening);
                     }
-                    log.info("[OA-API] Kelly Factor for game Id " + betGameDTO.getGame_id() + " : " + kellyFactorCalc);
                     if (kellyFactorCalc >= kellyFactor) {
                         if (betGameDTO.isResult()) {
                             wins++;

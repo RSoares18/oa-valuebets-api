@@ -7,24 +7,24 @@ import com.oa.api.service.BetGameService;
 import com.oa.api.service.TestService;
 import com.oa.api.service.UpcomingBetService;
 import com.oa.api.telegram.OABot;
+import com.oa.api.util.MarketMapper;
 import com.oa.api.util.UpcomingRequests;
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.repository.query.Param;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class RestAPIController {
 
-    private static final Logger log = Logger.getLogger(RestAPIController.class);
+    private static final Logger log = LoggerFactory.getLogger(RestAPIController.class);
 
     OABot telegramBot = new OABot();
 
@@ -70,7 +70,7 @@ public class RestAPIController {
         for(HashMap<String, Object> betGame : result){
             betGameService.createBetGame(betGame);
         }
-        log.info("[OA SERVICE] Inserted: " + (betGameService.getTotalRecords()-existingRecords) + " games");
+        log.info("[OA SERVICE] Inserted: {} games in the DB", (betGameService.getTotalRecords()-existingRecords));
         return result;
     }
 
@@ -80,7 +80,8 @@ public class RestAPIController {
         RestTemplate restTemplate = new RestTemplate();
         List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
         List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
-        registerBot(telegramBot);
+        //registerBot(telegramBot);
+        log.info("{} NEW GAMES FOR {} MARKET", upcomingBets.size(), MarketMapper.getNameByKey(filterRequest.getMarket()));
         telegramBot.chunkMessage(upcomingBets);
         telegramBot.onClosing();
         return upcomingBets;
@@ -102,8 +103,11 @@ public class RestAPIController {
         if(!botSession.isRunning()){
             registerBot(telegramBot);
         }
+
+        log.info("{} NEW GAMES TO BET!", upcomingBets.size());
         telegramBot.chunkMessage(upcomingBets);
         telegramBot.onClosing();
+        stopBotSession();
         return upcomingBets;
     }
 
@@ -124,7 +128,7 @@ public class RestAPIController {
 
     private void registerBot(OABot bot){
         try {
-            botSession.stop();
+            stopBotSession();
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botSession = (DefaultBotSession) botsApi.registerBot(bot);
         } catch (TelegramApiException e) {
@@ -142,6 +146,12 @@ public class RestAPIController {
         for(FilterRequest request : allRequests){
             getUpcoming(request);
         }
+        stopBotSession();
+    }
 
+    private void stopBotSession(){
+        if(botSession.isRunning()){
+            botSession.stop();
+        }
     }
 }
