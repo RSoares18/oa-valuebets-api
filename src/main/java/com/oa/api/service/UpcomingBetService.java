@@ -5,7 +5,6 @@ import com.oa.api.entity.RegisteredBetDTO;
 import com.oa.api.model.FilterRequest;
 import com.oa.api.model.RegisteredBet;
 import com.oa.api.model.UpcomingBet;
-import com.oa.api.repository.BetGameRepository;
 import com.oa.api.repository.RegisteredBetRepository;
 import com.oa.api.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +82,7 @@ public class UpcomingBetService {
                     }
                     if(currentOdds != null && currentOdds > 0.00){
                         Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                        if(matchConditions(currentOdds, value, kellyFactor, openingKellyFactor, request)){
+                        if(matchConditions(openingOdds, currentOdds,value, kellyFactor, openingKellyFactor, request)){
                             upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds,value, kellyFactor,openingKellyFactor, bookie));
                         }
                     }
@@ -120,7 +119,7 @@ public class UpcomingBetService {
                     if(criteriaMatch(betGameDTO,request)){
 
                             Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                            if(matchConditions(currentOdds, value, kellyFactorCalc, openingKellyFactorCalc, request) && bookie.equals(request.getBookie())){
+                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request) && bookie.equals(request.getBookie())){
                                 upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, openingKellyFactorCalc,bookie));
                             }
                         }
@@ -175,6 +174,7 @@ public class UpcomingBetService {
         bet.setBookmaker(bookie);
         bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
         bet.setOpeningKellyFactor(openingKellyFactor);
+        bet.setCompetitionProgress(betGameDTO.getCompetition_progress());
         return bet;
     }
 
@@ -183,8 +183,9 @@ public class UpcomingBetService {
         return (diff/ourOdds) * 100.00;
     }
 
-    private boolean matchConditions(Double odds, Double value, Double kellyFactor, Double openingKellyFactor, FilterRequest request){
-        boolean oddsValue = odds >= request.getMinOdds() && odds <= request.getMaxOdds()
+    private boolean matchConditions(Double openingOdds, Double currentOdds, Double value, Double kellyFactor, Double openingKellyFactor, FilterRequest request){
+        boolean oddsValue = openingOdds >= request.getMinOdds() && openingOdds <= request.getMaxOdds()
+                && currentOdds >= request.getMinOdds() && currentOdds <= request.getMaxOdds()
                 && value >= request.getMinValue() && value <= request.getMaxValue();
 
         boolean kelly = kellyFactor == 0.00 || (kellyFactor >= request.getKellyFactor() && openingKellyFactor >= request.getKellyFactor());
@@ -217,6 +218,7 @@ public class UpcomingBetService {
     private boolean criteriaMatch(BetGameDTO game, FilterRequest request){
         return game.getProbability() != null
                 && !isRegistered(game)
+                && (game.getCompetition_progress() == null || game.getCompetition_progress() <= request.getMaxProgress())
                 && (game.getHome_played()>=request.getMinGamesPlayed() && game.getAway_played() >= request.getMinGamesPlayed())
                 && game.getProbability() >= request.getMinProbability()
                 && (request.isCountCups() || game.isCompetition_cup()==request.isCountCups())

@@ -81,8 +81,9 @@ public class RestAPIController {
         List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
         List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
         //registerBot(telegramBot);
-        log.info("{} NEW GAMES FOR {} MARKET", upcomingBets.size(), MarketMapper.getNameByKey(filterRequest.getMarket()));
-        telegramBot.chunkMessage(upcomingBets);
+        String market = MarketMapper.getNameByKey(filterRequest.getMarket());
+        log.info("{} NEW GAMES FOR {} MARKET", upcomingBets.size(), market);
+        telegramBot.chunkMessage(upcomingBets, market);
         telegramBot.onClosing();
         return upcomingBets;
     }
@@ -105,7 +106,7 @@ public class RestAPIController {
         }
 
         log.info("{} NEW GAMES TO BET!", upcomingBets.size());
-        telegramBot.chunkMessage(upcomingBets);
+        telegramBot.chunkMessage(upcomingBets, "All Markets");
         telegramBot.onClosing();
         stopBotSession();
         return upcomingBets;

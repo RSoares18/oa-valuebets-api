@@ -18,6 +18,9 @@ public class TestResponse implements Serializable {
     private Double maxDrawdown;
     private Double hitRate;
     private Double roi;
+    private Double kellyFactor;
+    private int maxLeagueProgress;
+    private int minGamesPlayed;
 
     public TestResponse(){}
 
@@ -37,6 +40,30 @@ public class TestResponse implements Serializable {
         this.roi = roi;
         this.maxProfit = maxProfit;
         this.maxDrawdown = maxDrawdown;
+    }
+
+    public Double getKellyFactor() {
+        return kellyFactor;
+    }
+
+    public void setKellyFactor(Double kellyFactor) {
+        this.kellyFactor = kellyFactor;
+    }
+
+    public int getMaxLeagueProgress() {
+        return maxLeagueProgress;
+    }
+
+    public void setMaxLeagueProgress(int maxLeagueProgress) {
+        this.maxLeagueProgress = maxLeagueProgress;
+    }
+
+    public int getMinGamesPlayed() {
+        return minGamesPlayed;
+    }
+
+    public void setMinGamesPlayed(int minGamesPlayed) {
+        this.minGamesPlayed = minGamesPlayed;
     }
 
     public Double getMaxProfit() {

@@ -30,6 +30,9 @@ public class TestService {
         response.setMinValue(request.getMinValue());
         response.setMaxValue(request.getMaxValue());
         response.setMarket(request.getMarket());
+        response.setMaxLeagueProgress(request.getMaxProgress());
+        response.setMinGamesPlayed(request.getMinGamesPlayed());
+        response.setKellyFactor(request.getKellyFactor());
         List<BetGameDTO> marketGames = betGameService.getGamesByMarket(request.getMarket());
         List<BetGameDTO> gamesToTest = new ArrayList<>();
 
@@ -261,6 +264,7 @@ public class TestService {
 
     private boolean criteriaMatch(BetGameDTO game, TestRequest request){
         return game.getProbability() != null
+                && (game.getCompetition_progress() == null || game.getCompetition_progress() <= request.getMaxProgress())
                 && game.getProbability() >= request.getMinProbability()
                 && (request.isCountCups() || game.isCompetition_cup()==request.isCountCups())
                 && (request.isCountFriendlies() || game.isCompetition_friendly()==request.isCountFriendlies());

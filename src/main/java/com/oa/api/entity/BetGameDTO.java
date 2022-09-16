@@ -30,6 +30,8 @@ public class BetGameDTO implements Serializable {
     private boolean competition_friendly;
     private boolean competition_cup;
     private String competition_predictability;
+    @Column(name = "competition_progress", updatable = true, nullable = true)
+    private Integer competition_progress;
     @Nullable
     private Double latest_1xbet_odds;
     @Nullable
@@ -72,6 +74,14 @@ public class BetGameDTO implements Serializable {
     private Double probability;
     private boolean result;
     private String score;
+
+    public Integer getCompetition_progress() {
+        return competition_progress;
+    }
+
+    public void setCompetition_progress(Integer competition_progress) {
+        this.competition_progress = competition_progress;
+    }
 
     public Long getGame_id() {
         return game_id;

@@ -162,6 +162,6 @@ public class BetGameConverter {
         betGameDTO.setCompetition_friendly((boolean) compDetails.get(BetGameFields.COMPETITION_IS_FRIENDLY.getFieldName()));
         betGameDTO.setCompetition_cup((boolean) compDetails.get(BetGameFields.COMPETITION_IS_CUP.getFieldName()));
         betGameDTO.setCompetition_predictability((String) compDetails.get(BetGameFields.COMPETITION_PREDICTABILITY.getFieldName()));
-
+        betGameDTO.setCompetition_progress((Integer) compDetails.get(BetGameFields.COMPETITION_PROGRESS.getFieldName()));
     }
 }

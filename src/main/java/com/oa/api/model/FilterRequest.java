@@ -15,9 +15,10 @@ public class FilterRequest implements Serializable {
     private boolean countFriendlies;
     private boolean countCups;
     private int minGamesPlayed;
+    private int maxProgress;
 
     public FilterRequest(int minGamesPlayed,String bookie, String market, Double minOdds, Double maxOdds, Double minProbability,
-                         Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups) {
+                         Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups, int maxProgress) {
         this.bookie = bookie;
         this.market = market;
         this.minOdds = minOdds;
@@ -29,9 +30,18 @@ public class FilterRequest implements Serializable {
         this.countFriendlies = countFriendlies;
         this.countCups = countCups;
         this.minGamesPlayed = minGamesPlayed;
+        this.maxProgress = maxProgress;
     }
 
     public FilterRequest() {
+    }
+
+    public int getMaxProgress() {
+        return maxProgress;
+    }
+
+    public void setMaxProgress(int maxProgress) {
+        this.maxProgress = maxProgress;
     }
 
     public int getMinGamesPlayed() {

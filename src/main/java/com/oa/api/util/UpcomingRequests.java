@@ -27,6 +27,7 @@ public class UpcomingRequests {
         oversRequest.setMinValue(0.00);
         oversRequest.setKellyFactor(0.10);
         oversRequest.setMinGamesPlayed(1);
+        oversRequest.setMaxProgress(90);
         return oversRequest;
     }
 
@@ -43,6 +44,7 @@ public class UpcomingRequests {
         undersRequest.setMinValue(20.00);
         undersRequest.setKellyFactor(0.00);
         undersRequest.setMinGamesPlayed(3);
+        undersRequest.setMaxProgress(90);
         return undersRequest;
 
     }
@@ -60,6 +62,7 @@ public class UpcomingRequests {
         homeWinRequest.setMinValue(0.00);
         homeWinRequest.setKellyFactor(0.25);
         homeWinRequest.setMinGamesPlayed(3);
+        homeWinRequest.setMaxProgress(90);
         return homeWinRequest;
 
     }
@@ -77,6 +80,7 @@ public class UpcomingRequests {
         awayWinRequest.setMinValue(0.00);
         awayWinRequest.setKellyFactor(0.20);
         awayWinRequest.setMinGamesPlayed(2);
+        awayWinRequest.setMaxProgress(90);
         return awayWinRequest;
 
     }

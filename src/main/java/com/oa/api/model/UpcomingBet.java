@@ -19,6 +19,7 @@ public class UpcomingBet {
     private String bookmaker;
     private String competition;
     private Double openingKellyFactor;
+    private int competitionProgress;
 
     public UpcomingBet(String competition,String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
         this.competition = competition;
@@ -38,6 +39,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public int getCompetitionProgress() {
+        return competitionProgress;
+    }
+
+    public void setCompetitionProgress(int competitionProgress) {
+        this.competitionProgress = competitionProgress;
     }
 
     public Double getOpeningKellyFactor() {

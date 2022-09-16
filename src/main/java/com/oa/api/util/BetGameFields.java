@@ -36,6 +36,7 @@ public enum BetGameFields {
     COMPETITION_IS_CUP("is_cup"), //boolean
     COMPETITION_IS_FRIENDLY("is_friendly"), //boolean
     COMPETITION_PREDICTABILITY("predictability"),
+    COMPETITION_PROGRESS("progress"),
 
     //BOOKMAKER HASHMAP
     BOOKMAKER_ID("bookmaker_id"),
