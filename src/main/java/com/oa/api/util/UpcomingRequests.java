@@ -11,7 +11,7 @@ public class UpcomingRequests {
     private List<FilterRequest> allRequests;
 
     public UpcomingRequests(){
-        allRequests = Arrays.asList(createOversRequest(), createUndersRequest(), createHomeWinsRequest(), createAwayWinsRequest());
+        allRequests = Arrays.asList(createOversRequest(), createLowOversRequest(),createUndersRequest(), createHomeWinsRequest(), createAwayWinsRequest());
     }
 
     public FilterRequest createOversRequest(){
@@ -20,12 +20,29 @@ public class UpcomingRequests {
         oversRequest.setBookie("1xBet");
         oversRequest.setCountCups(false);
         oversRequest.setCountFriendlies(false);
-        oversRequest.setMinOdds(1.50);
+        oversRequest.setMinOdds(2.00);
         oversRequest.setMaxOdds(10.00);
         oversRequest.setMinProbability(45.00);
         oversRequest.setMaxValue(10000.00);
         oversRequest.setMinValue(0.00);
         oversRequest.setKellyFactor(0.10);
+        oversRequest.setMinGamesPlayed(1);
+        oversRequest.setMaxProgress(90);
+        return oversRequest;
+    }
+
+    public FilterRequest createLowOversRequest(){
+        FilterRequest oversRequest = new FilterRequest();
+        oversRequest.setMarket("o25_probability");
+        oversRequest.setBookie("1xBet");
+        oversRequest.setCountCups(false);
+        oversRequest.setCountFriendlies(false);
+        oversRequest.setMinOdds(1.55);
+        oversRequest.setMaxOdds(1.79);
+        oversRequest.setMinProbability(45.00);
+        oversRequest.setMaxValue(10000.00);
+        oversRequest.setMinValue(0.00);
+        oversRequest.setKellyFactor(0.05);
         oversRequest.setMinGamesPlayed(1);
         oversRequest.setMaxProgress(90);
         return oversRequest;

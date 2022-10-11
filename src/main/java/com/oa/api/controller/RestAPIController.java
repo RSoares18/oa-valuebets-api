@@ -64,7 +64,7 @@ public class RestAPIController {
     @GetMapping(value ="/results")
     public List<HashMap<String, Object>> getResults(){
         int existingRecords = betGameService.getTotalRecords();
-        String uri = "https://oddalerts.com/value-bets?export=results&key=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
+        String uri = "https://data.oddalerts.com/api/value/results?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
         RestTemplate restTemplate = new RestTemplate();
         List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
         for(HashMap<String, Object> betGame : result){
@@ -76,40 +76,51 @@ public class RestAPIController {
 
     @PostMapping(value ="/upcoming")
     public List<UpcomingBet> getUpcoming(@RequestBody FilterRequest filterRequest) throws UnsupportedEncodingException {
-        String uri = "https://oddalerts.com/value-bets?export=upcoming&key=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
-        RestTemplate restTemplate = new RestTemplate();
-        List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
-        List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
-        //registerBot(telegramBot);
-        String market = MarketMapper.getNameByKey(filterRequest.getMarket());
-        log.info("{} NEW GAMES FOR {} MARKET", upcomingBets.size(), market);
-        telegramBot.chunkMessage(upcomingBets, market);
-        telegramBot.onClosing();
-        return upcomingBets;
+        try{
+            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
+            RestTemplate restTemplate = new RestTemplate();
+            List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
+            List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
+            String market = MarketMapper.getNameByKey(filterRequest.getMarket());
+            log.info("{} NEW GAMES FOR {} MARKET", upcomingBets.size(), market);
+            telegramBot.chunkMessage(upcomingBets, market);
+            telegramBot.onClosing();
+            return upcomingBets;
+        } catch(Exception e){
+            log.info(e.getMessage(), e);
+            return new ArrayList<>();
+        }
+
     }
 
     @GetMapping(value ="/allUpcoming")
     public List<UpcomingBet> getUpcoming() throws UnsupportedEncodingException {
-        log.info("Get All Upcoming Requests");
-        String uri = "https://oddalerts.com/value-bets?export=upcoming&key=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
-        RestTemplate restTemplate = new RestTemplate();
-        List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
-        UpcomingRequests requests = new UpcomingRequests();
-        List<FilterRequest> allRequests = requests.getAllRequests();
-        List<UpcomingBet> upcomingBets = new ArrayList<>();
+        try{
+            log.info("Get All Upcoming Requests");
+            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
+            RestTemplate restTemplate = new RestTemplate();
+            List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
+            UpcomingRequests requests = new UpcomingRequests();
+            List<FilterRequest> allRequests = requests.getAllRequests();
+            List<UpcomingBet> upcomingBets = new ArrayList<>();
 
-        for(FilterRequest filterRequest : allRequests){
-            upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
-        }
-        if(!botSession.isRunning()){
-            registerBot(telegramBot);
+            for(FilterRequest filterRequest : allRequests){
+                upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
+            }
+            if(!botSession.isRunning()){
+                registerBot(telegramBot);
+            }
+
+            log.info("{} NEW GAMES TO BET!", upcomingBets.size());
+            telegramBot.chunkMessage(upcomingBets, "All Markets");
+            telegramBot.onClosing();
+            stopBotSession();
+            return upcomingBets;
+        } catch(Exception e){
+            log.info(e.getMessage(), e);
+            return new ArrayList<>();
         }
 
-        log.info("{} NEW GAMES TO BET!", upcomingBets.size());
-        telegramBot.chunkMessage(upcomingBets, "All Markets");
-        telegramBot.onClosing();
-        stopBotSession();
-        return upcomingBets;
     }
 
     @PostMapping(value ="/test")

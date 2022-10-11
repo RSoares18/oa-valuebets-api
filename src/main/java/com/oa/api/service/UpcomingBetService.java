@@ -119,7 +119,7 @@ public class UpcomingBetService {
                     if(criteriaMatch(betGameDTO,request)){
 
                             Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request) && bookie.equals(request.getBookie())){
+                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request)){
                                 upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, openingKellyFactorCalc,bookie));
                             }
                         }
@@ -174,7 +174,7 @@ public class UpcomingBetService {
         bet.setBookmaker(bookie);
         bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
         bet.setOpeningKellyFactor(openingKellyFactor);
-        bet.setCompetitionProgress(betGameDTO.getCompetition_progress());
+        bet.setCompetitionProgress(betGameDTO.getCompetition_progress() == null ? 0 : betGameDTO.getCompetition_progress());
         return bet;
     }
 

@@ -9,6 +9,7 @@ public class TestRequest implements Serializable {
     private Double minOdds;
     private Double maxOdds;
     private Double minProbability;
+    private Double maxProbability;
     private Double minValue;
     private Double maxValue;
     private Double kellyFactor;
@@ -17,6 +18,8 @@ public class TestRequest implements Serializable {
     private boolean openingOdds;
     private int minGamesPlayed;
     private int maxProgress;
+    private String country;
+
 
     public TestRequest(int minGamesPlayed, String bookie, String market,Double minOdds, Double maxOdds, Double minProbability,
                        Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups, boolean openingOdds, int maxProgress) {
@@ -33,6 +36,22 @@ public class TestRequest implements Serializable {
         this.kellyFactor = kellyFactor;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+    }
+
+    public Double getMaxProbability() {
+        return maxProbability;
+    }
+
+    public void setMaxProbability(Double maxProbability) {
+        this.maxProbability = maxProbability;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public int getMaxProgress() {

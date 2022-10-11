@@ -8,6 +8,7 @@ public class TestResponse implements Serializable {
     private Double minOdds;
     private Double maxOdds;
     private Double minProbability;
+    private Double maxProbability;
     private Double minValue;
     private Double maxValue;
     private int numBets;
@@ -21,6 +22,7 @@ public class TestResponse implements Serializable {
     private Double kellyFactor;
     private int maxLeagueProgress;
     private int minGamesPlayed;
+    private String country;
 
     public TestResponse(){}
 
@@ -40,6 +42,22 @@ public class TestResponse implements Serializable {
         this.roi = roi;
         this.maxProfit = maxProfit;
         this.maxDrawdown = maxDrawdown;
+    }
+
+    public Double getMaxProbability() {
+        return maxProbability;
+    }
+
+    public void setMaxProbability(Double maxProbability) {
+        this.maxProbability = maxProbability;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public Double getKellyFactor() {
