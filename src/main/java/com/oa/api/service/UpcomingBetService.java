@@ -140,10 +140,10 @@ public class UpcomingBetService {
         List <RegisteredBet> result = new ArrayList<>();
 
         for(UpcomingBet upcomingBet : upcomingBets){
-            if((upcomingBet.getDiffMovement() <= 10.00 && upcomingBet.getMarket().equals(MarketMapper.HOME.getName()))
-                || (upcomingBet.getDiffMovement() <= 5.00 && upcomingBet.getMarket().equals(MarketMapper.O25.getName()))
+            if((upcomingBet.getMarket().equals(MarketMapper.HOME.getName()))
+                || (upcomingBet.getMarket().equals(MarketMapper.O25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.U25.getName()))
-                || (upcomingBet.getDiffMovement() <= 10.00 && upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))){
+                || (upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))){
                 result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket())));
             }
         }
