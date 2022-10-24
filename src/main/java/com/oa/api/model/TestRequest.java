@@ -19,6 +19,8 @@ public class TestRequest implements Serializable {
     private int minGamesPlayed;
     private int maxProgress;
     private String country;
+    private String startDate;
+    private String endDate;
 
 
     public TestRequest(int minGamesPlayed, String bookie, String market,Double minOdds, Double maxOdds, Double minProbability,
@@ -36,6 +38,22 @@ public class TestRequest implements Serializable {
         this.kellyFactor = kellyFactor;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public Double getMaxProbability() {

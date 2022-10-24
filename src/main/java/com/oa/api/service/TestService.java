@@ -5,13 +5,19 @@ import com.oa.api.model.TestRequest;
 import com.oa.api.model.TestResponse;
 import com.oa.api.util.BigDecimalRoundDoubleMain;
 import com.oa.api.util.Bookmakers;
+import org.aspectj.weaver.ast.Test;
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 @Service
 public class TestService {
@@ -35,6 +41,8 @@ public class TestService {
         response.setCountry(request.getCountry());
         response.setMaxProbability(request.getMaxProbability());
         response.setKellyFactor(request.getKellyFactor());
+        response.setStartDate(request.getStartDate());
+        response.setEndDate(request.getEndDate());
         List<BetGameDTO> marketGames = betGameService.getGamesByMarket(request.getMarket());
         List<BetGameDTO> gamesToTest = new ArrayList<>();
 
@@ -131,6 +139,7 @@ public class TestService {
                 }
             }
         }
+
 
         response.setMaxDrawdown(BigDecimalRoundDoubleMain.roundDouble(maxDrawdown, 2));
         response.setMaxProfit(BigDecimalRoundDoubleMain.roundDouble(maxProfit,2));
@@ -270,11 +279,38 @@ public class TestService {
                 && (game.getProbability() >= request.getMinProbability() && game.getProbability() <= request.getMaxProbability())
                 && (request.isCountCups() || game.isCompetition_cup()==request.isCountCups())
                 && (request.isCountFriendlies() || game.isCompetition_friendly()==request.isCountFriendlies())
-                && (request.getCountry().isEmpty() || request.getCountry().equalsIgnoreCase(game.getCompetition_country()));
+                && ((request.getCountry() == null || request.getCountry().isEmpty()) || request.getCountry().equalsIgnoreCase(game.getCompetition_country()))
+                && validDate(game, request);
+    }
+
+    private boolean validDate(BetGameDTO game, TestRequest request){
+        boolean isNull = request.getStartDate() == null || request.getEndDate() == null || request.getStartDate().isEmpty() || request.getEndDate().isEmpty();
+
+        if(!isNull){
+            try{
+                Long unixStart = convertDateToUnix(request.getStartDate());
+                Long unixEnd = convertDateToUnix(request.getEndDate());
+                return unixStart != null && unixEnd != null && game.getUnix().compareTo(unixStart) >= 0 && game.getUnix().compareTo(unixEnd) <= 0;
+            } catch(ParseException e){
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 
     private Double calculateValue(Double bookieOdds, Double ourOdds){
         Double diff = bookieOdds - ourOdds;
         return (diff/ourOdds) * 100.00;
+    }
+
+    private Long convertDateToUnix(String date) throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        dateFormat.setTimeZone(TimeZone.getDefault());
+
+        Date dateConverted = dateFormat.parse(date);
+        Long unixTime = dateConverted.getTime() / 1000;
+        return unixTime;
+
     }
 }

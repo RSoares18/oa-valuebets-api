@@ -11,7 +11,7 @@ public class UpcomingRequests {
     private List<FilterRequest> allRequests;
 
     public UpcomingRequests(){
-        allRequests = Arrays.asList(createOversRequest(), createLowOversRequest(),createUndersRequest(), createHomeWinsRequest(), createAwayWinsRequest());
+        allRequests = Arrays.asList(createLowOversRequest(),createUndersRequest(), createHomeWinsRequest(), createAwayWinsRequest());
     }
 
     public FilterRequest createOversRequest(){
@@ -55,7 +55,7 @@ public class UpcomingRequests {
         undersRequest.setCountCups(false);
         undersRequest.setCountFriendlies(false);
         undersRequest.setMinOdds(2.70);
-        undersRequest.setMaxOdds(10.00);
+        undersRequest.setMaxOdds(50.00);
         undersRequest.setMinProbability(30.00);
         undersRequest.setMaxValue(10000.00);
         undersRequest.setMinValue(20.00);
@@ -73,7 +73,7 @@ public class UpcomingRequests {
         homeWinRequest.setCountCups(false);
         homeWinRequest.setCountFriendlies(false);
         homeWinRequest.setMinOdds(2.50);
-        homeWinRequest.setMaxOdds(10.00);
+        homeWinRequest.setMaxOdds(50.00);
         homeWinRequest.setMinProbability(40.00);
         homeWinRequest.setMaxValue(10000.00);
         homeWinRequest.setMinValue(0.00);
@@ -91,7 +91,7 @@ public class UpcomingRequests {
         awayWinRequest.setCountCups(false);
         awayWinRequest.setCountFriendlies(false);
         awayWinRequest.setMinOdds(2.50);
-        awayWinRequest.setMaxOdds(10.00);
+        awayWinRequest.setMaxOdds(50.00);
         awayWinRequest.setMinProbability(40.00);
         awayWinRequest.setMaxValue(10000.00);
         awayWinRequest.setMinValue(0.00);

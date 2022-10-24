@@ -23,6 +23,8 @@ public class TestResponse implements Serializable {
     private int maxLeagueProgress;
     private int minGamesPlayed;
     private String country;
+    private String startDate;
+    private String endDate;
 
     public TestResponse(){}
 
@@ -42,6 +44,22 @@ public class TestResponse implements Serializable {
         this.roi = roi;
         this.maxProfit = maxProfit;
         this.maxDrawdown = maxDrawdown;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public Double getMaxProbability() {
