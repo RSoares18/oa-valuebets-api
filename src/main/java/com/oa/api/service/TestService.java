@@ -45,13 +45,25 @@ public class TestService {
         response.setEndDate(request.getEndDate());
         List<BetGameDTO> marketGames = betGameService.getGamesByMarket(request.getMarket());
         List<BetGameDTO> gamesToTest = new ArrayList<>();
+        Long unixStart = null;
+        Long unixEnd = null;
+
+        if(request.getEndDate() != null && request.getStartDate() != null){
+            try{
+                unixStart = convertDateToUnix(request.getStartDate());
+                unixEnd = convertDateToUnix(request.getEndDate());
+            } catch (ParseException e){
+                log.error("Invalid date format");
+            }
+        }
+
 
         if(request.getBookie().equals(Bookmakers.ONEXBET.getName())){
-            gamesToTest = filterGames1xbet(request, marketGames);
+            gamesToTest = filterGames1xbet(request, marketGames, unixStart, unixEnd);
         } else if(request.getBookie().equals(Bookmakers.BET365.getName())){
-            gamesToTest = filterGamesBet365(request, marketGames);
+            gamesToTest = filterGamesBet365(request, marketGames, unixStart, unixEnd);
         } else if (request.getBookie().equals(Bookmakers.PINNACLE.getName())){
-            gamesToTest = filterGamesPinnacle(request, marketGames);
+            gamesToTest = filterGamesPinnacle(request, marketGames, unixStart, unixEnd);
         }
 
         log.info("Total market games " + marketGames.size());
@@ -175,7 +187,7 @@ public class TestService {
         return 0.0;
     }
 
-    private List<BetGameDTO> filterGames1xbet(TestRequest request, List<BetGameDTO> marketGames){
+    private List<BetGameDTO> filterGames1xbet(TestRequest request, List<BetGameDTO> marketGames, Long start, Long end){
         List <BetGameDTO> result = new ArrayList<>();
         for(BetGameDTO game : marketGames){
             if(request.isOpeningOdds()){
@@ -185,7 +197,7 @@ public class TestService {
                     if(value != null
                             && value >= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -197,7 +209,7 @@ public class TestService {
                     if(value!= null
                             && value >= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -207,7 +219,7 @@ public class TestService {
         return result;
     }
 
-    private List<BetGameDTO> filterGamesPinnacle(TestRequest request, List<BetGameDTO> marketGames){
+    private List<BetGameDTO> filterGamesPinnacle(TestRequest request, List<BetGameDTO> marketGames, Long start, Long end){
         List <BetGameDTO> result = new ArrayList<>();
         for(BetGameDTO game : marketGames){
             if(request.isOpeningOdds()){
@@ -217,7 +229,7 @@ public class TestService {
                     if(value != null &&
                     value >= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -230,7 +242,7 @@ public class TestService {
                     if(value != null
                             && value >= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -240,7 +252,7 @@ public class TestService {
         return result;
     }
 
-    private List<BetGameDTO> filterGamesBet365(TestRequest request, List<BetGameDTO> marketGames){
+    private List<BetGameDTO> filterGamesBet365(TestRequest request, List<BetGameDTO> marketGames, Long start, Long end){
         List <BetGameDTO> result = new ArrayList<>();
         for(BetGameDTO game : marketGames){
             if(request.isOpeningOdds()){
@@ -250,7 +262,7 @@ public class TestService {
                     if(value != null
                             && value>= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -263,7 +275,7 @@ public class TestService {
                     if(value != null
                             && value >= request.getMinValue()
                             && value <= request.getMaxValue()){
-                        if(criteriaMatch(game, request)){
+                        if(criteriaMatch(game, request, start, end)){
                             result.add(game);
                         }
                     }
@@ -273,27 +285,22 @@ public class TestService {
         return result;
     }
 
-    private boolean criteriaMatch(BetGameDTO game, TestRequest request){
+    private boolean criteriaMatch(BetGameDTO game, TestRequest request, Long start, Long end){
+
         return game.getProbability() != null
                 && (game.getCompetition_progress() == null || game.getCompetition_progress() <= request.getMaxProgress())
                 && (game.getProbability() >= request.getMinProbability() && game.getProbability() <= request.getMaxProbability())
                 && (request.isCountCups() || game.isCompetition_cup()==request.isCountCups())
                 && (request.isCountFriendlies() || game.isCompetition_friendly()==request.isCountFriendlies())
                 && ((request.getCountry() == null || request.getCountry().isEmpty()) || request.getCountry().equalsIgnoreCase(game.getCompetition_country()))
-                && validDate(game, request);
+                && validDate(game, start, end);
     }
 
-    private boolean validDate(BetGameDTO game, TestRequest request){
-        boolean isNull = request.getStartDate() == null || request.getEndDate() == null || request.getStartDate().isEmpty() || request.getEndDate().isEmpty();
+    private boolean validDate(BetGameDTO game, Long start, Long end){
+        boolean isNull = start == null || end == null;
 
         if(!isNull){
-            try{
-                Long unixStart = convertDateToUnix(request.getStartDate());
-                Long unixEnd = convertDateToUnix(request.getEndDate());
-                return unixStart != null && unixEnd != null && game.getUnix().compareTo(unixStart) >= 0 && game.getUnix().compareTo(unixEnd) <= 0;
-            } catch(ParseException e){
-                return false;
-            }
+            return game.getUnix().compareTo(start) >= 0 && game.getUnix().compareTo(end) <= 0;
         } else {
             return true;
         }
@@ -306,11 +313,10 @@ public class TestService {
 
     private Long convertDateToUnix(String date) throws ParseException {
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        dateFormat.setTimeZone(TimeZone.getDefault());
-
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         Date dateConverted = dateFormat.parse(date);
-        Long unixTime = dateConverted.getTime() / 1000;
-        return unixTime;
+        log.info("Date converted: " + date);
+        return dateConverted.getTime() / 1000;
 
     }
 }
