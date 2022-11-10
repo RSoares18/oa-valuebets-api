@@ -128,6 +128,11 @@ public class RestAPIController {
         return testService.doTest(request);
     }
 
+    @PostMapping(value ="/test/all")
+    public MultipleTestResponse getAllTests(@RequestBody MultipleTestRequest request){
+        return testService.doMultipleTests(request);
+    }
+
     @PostMapping(value ="/save")
     public List<RegisteredBetDTO> getTestResult(@RequestBody List<RegisteredBet> bets){
         return upcomingBetService.saveAll(bets);

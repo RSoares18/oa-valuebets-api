@@ -1,7 +1,6 @@
 package com.oa.api.service;
 
 import com.oa.api.entity.BetGameDTO;
-import com.oa.api.model.BetGame;
 import com.oa.api.repository.BetGameRepository;
 import com.oa.api.util.BetGameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,10 @@ public class BetGameService {
 
     public List<BetGameDTO> getGamesByMarket(String market){
         return betGameRepository.findGameByMarket(market);
+    }
+
+    public List<BetGameDTO> getGamesByMarkets(List<String> markets){
+        return betGameRepository.findGameByMarketIn(markets);
     }
 
     public int getTotalRecords(){

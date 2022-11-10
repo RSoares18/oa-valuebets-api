@@ -1,16 +1,16 @@
 package com.oa.api.service;
 
 import com.oa.api.entity.BetGameDTO;
+import com.oa.api.model.MultipleTestRequest;
+import com.oa.api.model.MultipleTestResponse;
 import com.oa.api.model.TestRequest;
 import com.oa.api.model.TestResponse;
 import com.oa.api.util.BigDecimalRoundDoubleMain;
 import com.oa.api.util.Bookmakers;
-import org.aspectj.weaver.ast.Test;
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +27,123 @@ public class TestService {
 
     @Autowired
     private BetGameService betGameService;
+
+    public MultipleTestResponse doMultipleTests(MultipleTestRequest testRequest){
+        MultipleTestResponse response = new MultipleTestResponse();
+        List<String> testedMarkets = new ArrayList<>();
+        List<TestRequest> requestList = testRequest.getRequestList();
+        requestList.forEach(request -> testedMarkets.add(request.getMarket()));
+        List<BetGameDTO> marketGames = betGameService.getGamesByMarkets(testedMarkets);
+        response.setMarkets(testedMarkets);
+
+        List<BetGameDTO> gamesToTest = new ArrayList<>();
+        Long unixStart = null;
+        Long unixEnd = null;
+
+
+        if(testRequest.getEndDate() != null && testRequest.getStartDate() != null){
+            try{
+                unixStart = convertDateToUnix(testRequest.getStartDate());
+                unixEnd = convertDateToUnix(testRequest.getEndDate());
+            } catch (ParseException e){
+                log.error("Invalid date format");
+            }
+        }
+
+        if(testRequest.getBookie().equals(Bookmakers.ONEXBET.getName())){
+            gamesToTest = filterGames1xbetForMultipleMarkets(requestList, marketGames, unixStart, unixEnd);
+        } else if(testRequest.getBookie().equals(Bookmakers.BET365.getName())){
+            gamesToTest = filterGamesBet365ForMultipleMarkets(requestList, marketGames, unixStart, unixEnd);
+        } else if (testRequest.getBookie().equals(Bookmakers.PINNACLE.getName())){
+            gamesToTest = filterGamesPinnacleForMultipleMarkets(requestList, marketGames, unixStart, unixEnd);
+        }
+
+
+        log.info("Total market games " + marketGames.size());
+        log.info("Total games to test " + gamesToTest.size());
+
+        if(!gamesToTest.isEmpty()){
+            executeMultipleTest(requestList, response, gamesToTest, testRequest.getBookie());
+        }
+
+
+
+        return response;
+    }
+
+    private void executeMultipleTest(List<TestRequest> requests, MultipleTestResponse response, List<BetGameDTO> gamesToTest, String bookie) {
+        int wins = 0;
+        int losses = 0;
+        Double currentDrawdown = 0.0;
+        Double maxDrawdown = 0.0;
+        Double maxProfit = 0.0;
+        Double profit = 0.0;
+
+        Double staked = 0.0;
+        Double returned = 0.0;
+
+        for (BetGameDTO betGameDTO : gamesToTest) {
+            for (TestRequest req : requests) {
+                if (req.getMarket().equals(betGameDTO.getMarket())) {
+                    if (req.getKellyFactor() == 0.00) {
+                        if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
+                            if (betGameDTO.isResult()) {
+                                wins++;
+                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO);
+                                returned = returned + (oddsToCalculate * STAKE);
+                            } else {
+                                losses++;
+                            }
+
+                            staked = staked + STAKE;
+                            profit = returned - staked;
+                            maxProfit = profit > maxProfit ? profit : maxProfit;
+                            currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
+                            maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                        }
+                    } else {
+                        if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
+                            Double kellyFactorCalc = 0.0;
+                            if (bookie.equals(Bookmakers.ONEXBET.getName())) {
+                                kellyFactorCalc = calculateKellyFactor1xBet(betGameDTO, req.isOpeningOdds());
+                            } else if (bookie.equals(Bookmakers.BET365.getName())) {
+                                kellyFactorCalc = calculateKellyFactorBet365(betGameDTO, req.isOpeningOdds());
+                            } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
+                                kellyFactorCalc = calculateKellyFactorPinnacle(betGameDTO, req.isOpeningOdds());
+                            }
+                            if (kellyFactorCalc >= req.getKellyFactor()) {
+                                if (betGameDTO.isResult()) {
+                                    wins++;
+                                    Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO);
+                                    returned = returned + (oddsToCalculate * STAKE);
+                                } else {
+                                    losses++;
+                                }
+                                staked = staked + STAKE;
+                                profit = returned - staked;
+                                maxProfit = profit > maxProfit ? profit : maxProfit;
+                                currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
+                                maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+        response.setMaxDrawdown(BigDecimalRoundDoubleMain.roundDouble(maxDrawdown, 2));
+        response.setMaxProfit(BigDecimalRoundDoubleMain.roundDouble(maxProfit, 2));
+        response.setRoi(BigDecimalRoundDoubleMain.roundDouble(((profit * STAKE) / (staked)) * 100, 2));
+        response.setWins(wins);
+        response.setLosses(losses);
+        response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit, 2));
+        response.setNumBets(wins + losses);
+        response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double) wins / response.getNumBets()) * 100, 2) : 0.00);
+
+    }
+
 
     public TestResponse doTest(TestRequest request){
         TestResponse response = new TestResponse();
@@ -218,6 +335,119 @@ public class TestService {
         }
         return result;
     }
+
+    private List<BetGameDTO> filterGames1xbetForMultipleMarkets(List<TestRequest> requests, List<BetGameDTO> marketGames, Long start, Long end){
+        List <BetGameDTO> result = new ArrayList<>();
+        for(BetGameDTO game : marketGames){
+            for(TestRequest req : requests){
+                if(req.getMarket().equals(game.getMarket())){
+                    if(req.isOpeningOdds()){
+                        Double openingOdds = game.getOpening_1xbet_odds();
+                        if(openingOdds!= null && openingOdds >= req.getMinOdds() && openingOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(openingOdds, game.getOur_odds());
+                            if(value != null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    } else {
+                        Double latestOdds = game.getLatest_1xbet_odds();
+                        if(latestOdds!= null && latestOdds >= req.getMinOdds() && latestOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(latestOdds, game.getOur_odds());
+                            if(value!= null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return result;
+    }
+
+    private List<BetGameDTO> filterGamesPinnacleForMultipleMarkets(List<TestRequest> requests, List<BetGameDTO> marketGames, Long start, Long end){
+        List <BetGameDTO> result = new ArrayList<>();
+        for(BetGameDTO game : marketGames){
+            for(TestRequest req : requests){
+                if(req.getMarket().equals(game.getMarket())){
+                    if(req.isOpeningOdds()){
+                        Double openingOdds = game.getOpening_pinnacle_odds();
+                        if(openingOdds!= null && openingOdds >= req.getMinOdds() && openingOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(openingOdds, game.getOur_odds());
+                            if(value != null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    } else {
+                        Double latestOdds = game.getLatest_pinnacle_odds();
+                        if(latestOdds!= null && latestOdds >= req.getMinOdds() && latestOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(latestOdds, game.getOur_odds());
+                            if(value!= null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return result;
+    }
+
+    private List<BetGameDTO> filterGamesBet365ForMultipleMarkets(List<TestRequest> requests, List<BetGameDTO> marketGames, Long start, Long end){
+        List <BetGameDTO> result = new ArrayList<>();
+        for(BetGameDTO game : marketGames){
+            for(TestRequest req : requests){
+                if(req.getMarket().equals(game.getMarket())){
+                    if(req.isOpeningOdds()){
+                        Double openingOdds = game.getOpening_b365_odds();
+                        if(openingOdds!= null && openingOdds >= req.getMinOdds() && openingOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(openingOdds, game.getOur_odds());
+                            if(value != null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    } else {
+                        Double latestOdds = game.getLatest_b365_odds();
+                        if(latestOdds!= null && latestOdds >= req.getMinOdds() && latestOdds <= req.getMaxOdds()) {
+                            Double value = calculateValue(latestOdds, game.getOur_odds());
+                            if(value!= null
+                                    && value >= req.getMinValue()
+                                    && value <= req.getMaxValue()){
+                                if(criteriaMatch(game, req, start, end)){
+                                    result.add(game);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return result;
+    }
+
+
 
     private List<BetGameDTO> filterGamesPinnacle(TestRequest request, List<BetGameDTO> marketGames, Long start, Long end){
         List <BetGameDTO> result = new ArrayList<>();
