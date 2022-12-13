@@ -75,10 +75,26 @@ public class UpcomingBetService {
                 if(criteriaMatch(betGameDTO,request)){
                     Double currentOdds = calculateLatestOdds(request.getBookie(), betGameDTO);
                     Double openingOdds = calculateOpeningOdds(request.getBookie(), betGameDTO);
-                    if(request.getBookie().equals(Bookmakers.ONEXBET.getName()) && (currentOdds == null || currentOdds == 0.0)){
+                    Double opening365 = calculateOpeningOdds(Bookmakers.BET365.getName(), betGameDTO);
+                    Double openingPinnacle = calculateOpeningOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                    boolean is1xBet = request.getBookie().equals(Bookmakers.ONEXBET.getName());
+                    boolean is1xBetOddsNull = is1xBet && (currentOdds == null || currentOdds == 0.0);
+                    boolean is365Better = false;
+                    boolean isPinnacleBetter = false;
+
+                    if(!is1xBetOddsNull){
+                        is365Better = opening365 != null && openingOdds != null && opening365 >= openingOdds;
+                        isPinnacleBetter = openingPinnacle != null && openingOdds != null && openingPinnacle >= openingOdds;
+                    }
+
+                    if((is1xBet && (currentOdds == null || currentOdds == 0.0)) || is365Better){
                         currentOdds = calculateLatestOdds(Bookmakers.BET365.getName(), betGameDTO);
                         openingOdds = calculateOpeningOdds(Bookmakers.BET365.getName(), betGameDTO);
                         bookie = Bookmakers.BET365.getName();
+                    } else if (isPinnacleBetter){
+                        currentOdds = calculateLatestOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                        openingOdds = calculateOpeningOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                        bookie = Bookmakers.PINNACLE.getName();
                     }
                     if(currentOdds != null && currentOdds > 0.00){
                         Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
@@ -96,10 +112,26 @@ public class UpcomingBetService {
                 Double openingKellyFactorCalc = 0.0;
                 Double currentOdds = calculateLatestOdds(request.getBookie(), betGameDTO);
                 Double openingOdds = calculateOpeningOdds(request.getBookie(), betGameDTO);
-                if(request.getBookie().equals(Bookmakers.ONEXBET.getName()) && (currentOdds == null || currentOdds == 0.0)){
+                Double opening365 = calculateOpeningOdds(Bookmakers.BET365.getName(), betGameDTO);
+                Double openingPinnacle = calculateOpeningOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                boolean is1xBet = request.getBookie().equals(Bookmakers.ONEXBET.getName());
+                boolean is1xBetOddsNull = is1xBet && (currentOdds == null || currentOdds == 0.0);
+                boolean is365Better = false;
+                boolean isPinnacleBetter = false;
+
+                if(!is1xBetOddsNull){
+                    is365Better = opening365 != null && openingOdds != null && opening365 >= openingOdds;
+                    isPinnacleBetter = openingPinnacle != null && openingOdds != null && openingPinnacle >= openingOdds;
+                }
+
+                if((is1xBet && (currentOdds == null || currentOdds == 0.0)) || is365Better){
                     currentOdds = calculateLatestOdds(Bookmakers.BET365.getName(), betGameDTO);
                     openingOdds = calculateOpeningOdds(Bookmakers.BET365.getName(), betGameDTO);
                     bookie = Bookmakers.BET365.getName();
+                } else if (isPinnacleBetter){
+                    currentOdds = calculateLatestOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                    openingOdds = calculateOpeningOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
+                    bookie = Bookmakers.PINNACLE.getName();
                 }
                 if(currentOdds != null && currentOdds > 0.00){
                     if(bookie.equals(Bookmakers.ONEXBET.getName())){
@@ -144,7 +176,7 @@ public class UpcomingBetService {
                 || (upcomingBet.getMarket().equals(MarketMapper.O25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.U25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))){
-                result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket())));
+                result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket()), upcomingBet.getUnix()));
             }
         }
 
@@ -175,6 +207,7 @@ public class UpcomingBetService {
         bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
         bet.setOpeningKellyFactor(openingKellyFactor);
         bet.setCompetitionProgress(betGameDTO.getCompetition_progress() == null ? 0 : betGameDTO.getCompetition_progress());
+        bet.setUnix(betGameDTO.getUnix());
         return bet;
     }
 
@@ -227,7 +260,8 @@ public class UpcomingBetService {
 
     private boolean isRegistered(BetGameDTO game){
       Long id = Long.valueOf(game.getGame_id() + Market.getIdByName(game.getMarket()).getId());
-      return registeredBetRepository.findById(id).isPresent();
+      Optional<RegisteredBetDTO> rb = registeredBetRepository.findById(id);
+      return rb.isPresent() && rb.get().getUnix() != null && rb.get().getUnix().equals(game.getUnix()) ;
 
     }
 

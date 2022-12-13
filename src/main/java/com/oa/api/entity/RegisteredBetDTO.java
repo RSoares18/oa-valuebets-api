@@ -10,6 +10,7 @@ public class RegisteredBetDTO implements Serializable {
 
     @Id
     private Long id;
+    private Long unix;
 
     public Long getId() {
         return id;
@@ -17,6 +18,14 @@ public class RegisteredBetDTO implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUnix() {
+        return unix;
+    }
+
+    public void setUnix(Long unix) {
+        this.unix = unix;
     }
 
     @Override

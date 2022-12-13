@@ -14,7 +14,7 @@ public class UpcomingRequests {
         FilterRequest undersRequest = new FilterRequest(3,"1xBet", "u25_probability", 2.70, 50.00,30.00,20.00,10000.00,0.00,false, false,90);
         FilterRequest homeWinsRequest = new FilterRequest(3,"1xBet", "home_win_probability", 2.50, 50.00,40.00,0.00,10000.00,0.20,false, false,90);
         FilterRequest awayWinsRequest = new FilterRequest(2,"1xBet", "away_win_probability", 2.50, 50.00,40.00,0.00,10000.00,0.20,false, false,90);
-        allRequests = Arrays.asList(oversRequest,undersRequest, homeWinsRequest, awayWinsRequest);
+        allRequests = Arrays.asList(undersRequest, homeWinsRequest, awayWinsRequest);
     }
 
     public List<FilterRequest> getAllRequests() {

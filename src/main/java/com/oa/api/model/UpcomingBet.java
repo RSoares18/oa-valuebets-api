@@ -20,6 +20,7 @@ public class UpcomingBet {
     private String competition;
     private Double openingKellyFactor;
     private int competitionProgress;
+    private Long unix;
 
     public UpcomingBet(String competition,String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
         this.competition = competition;
@@ -39,6 +40,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public Long getUnix() {
+        return unix;
+    }
+
+    public void setUnix(Long unix) {
+        this.unix = unix;
     }
 
     public int getCompetitionProgress() {

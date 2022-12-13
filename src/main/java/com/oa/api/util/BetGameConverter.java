@@ -40,6 +40,7 @@ public class BetGameConverter {
     public RegisteredBetDTO convertRBModelToRBDTO(RegisteredBet bet){
         RegisteredBetDTO result = new RegisteredBetDTO();
         result.setId(Long.valueOf(bet.getId() + Market.getIdByName(bet.getMarket()).getId()));
+        result.setUnix(bet.getUnix());
         return result;
     }
 
