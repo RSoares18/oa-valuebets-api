@@ -29,11 +29,11 @@ public class OABot extends TelegramLongPollingBot {
 
     }
 
-    public void chunkMessage(List<UpcomingBet> upcomingBetList, String market) {
+    public void chunkMessage(List<UpcomingBet> upcomingBetList, String market, String bookie) {
         List<List<UpcomingBet>> allLists = Lists.partition(upcomingBetList, 5);
 
         if(allLists.isEmpty()){
-            sendMessage("\uD83D\uDD34 No new games to bet on for " + market);
+            sendMessage("\uD83D\uDD34 No new games to bet on for " + market + " on " + bookie);
         }
         for(List<UpcomingBet> list : allLists){
             sendMessage(removeUnwantedCharacters(list.toString()));

@@ -11,6 +11,7 @@ public class RegisteredBetDTO implements Serializable {
     @Id
     private Long id;
     private Long unix;
+    private Long bookieId;
 
     public Long getId() {
         return id;
@@ -26,6 +27,14 @@ public class RegisteredBetDTO implements Serializable {
 
     public void setUnix(Long unix) {
         this.unix = unix;
+    }
+
+    public Long getBookieId() {
+        return bookieId;
+    }
+
+    public void setBookieId(Long bookieId) {
+        this.bookieId = bookieId;
     }
 
     @Override

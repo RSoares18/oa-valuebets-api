@@ -22,6 +22,8 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
+    String bookie;
+
     public List<RegisteredBetDTO> saveAll(List<RegisteredBet> bets){
         List <RegisteredBetDTO> convertedBets = new ArrayList<>();
         for(RegisteredBet bet : bets){
@@ -64,7 +66,7 @@ public class UpcomingBetService {
 
         List<UpcomingBet> upcomingBets = new ArrayList<>();
         Double kellyFactor = request.getKellyFactor();
-        String bookie = request.getBookie();
+
 
         upcomingGames = upcomingGames.stream().filter(betGameDTO -> betGameDTO.getMarket().equals(request.getMarket())).collect(Collectors.toList());
 
@@ -115,11 +117,11 @@ public class UpcomingBetService {
                 Double opening365 = calculateOpeningOdds(Bookmakers.BET365.getName(), betGameDTO);
                 Double openingPinnacle = calculateOpeningOdds(Bookmakers.PINNACLE.getName(), betGameDTO);
                 boolean is1xBet = request.getBookie().equals(Bookmakers.ONEXBET.getName());
-                boolean is1xBetOddsNull = is1xBet && (currentOdds == null || currentOdds == 0.0);
+                boolean is1xBetOddsNull = currentOdds == null || currentOdds == 0.0;
                 boolean is365Better = false;
                 boolean isPinnacleBetter = false;
 
-                if(!is1xBetOddsNull){
+                if(is1xBet && !is1xBetOddsNull){
                     is365Better = opening365 != null && openingOdds != null && opening365 >= openingOdds;
                     isPinnacleBetter = openingPinnacle != null && openingOdds != null && openingPinnacle >= openingOdds;
                 }
@@ -176,7 +178,7 @@ public class UpcomingBetService {
                 || (upcomingBet.getMarket().equals(MarketMapper.O25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.U25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))){
-                result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket()), upcomingBet.getUnix()));
+                result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket()), upcomingBet.getUnix(),Bookmakers.getIdByName(upcomingBet.getBookmaker())));
             }
         }
 
@@ -259,9 +261,11 @@ public class UpcomingBetService {
     }
 
     private boolean isRegistered(BetGameDTO game){
-      Long id = Long.valueOf(game.getGame_id() + Market.getIdByName(game.getMarket()).getId());
+      Long id = Long.valueOf(game.getGame_id() + Market.getIdByName(game.getMarket()).getId() + Bookmakers.getIdByName(bookie));
       Optional<RegisteredBetDTO> rb = registeredBetRepository.findById(id);
-      return rb.isPresent() && rb.get().getUnix() != null && rb.get().getUnix().equals(game.getUnix()) ;
+      return rb.isPresent() &&
+              rb.get().getUnix() != null && rb.get().getUnix().equals(game.getUnix())
+              && rb.get().getBookieId() != null && rb.get().getBookieId().equals(Bookmakers.getIdByName(bookie)) ;
 
     }
 

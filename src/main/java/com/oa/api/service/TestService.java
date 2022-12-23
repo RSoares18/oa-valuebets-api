@@ -35,6 +35,8 @@ public class TestService {
         requestList.forEach(request -> testedMarkets.add(request.getMarket()));
         List<BetGameDTO> marketGames = betGameService.getGamesByMarkets(testedMarkets);
         response.setMarkets(testedMarkets);
+        response.setStartDate(testRequest.getStartDate());
+        response.setEndDate(testRequest.getEndDate());
 
         List<BetGameDTO> gamesToTest = new ArrayList<>();
         Long unixStart = null;

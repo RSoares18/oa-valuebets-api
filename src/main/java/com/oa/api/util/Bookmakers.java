@@ -1,5 +1,9 @@
 package com.oa.api.util;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum Bookmakers {
 
     ONEXBET(3,"1xBet"),
@@ -28,5 +32,11 @@ public enum Bookmakers {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public static Long getIdByName(String name){
+        List<Bookmakers> result = Arrays.stream(Bookmakers.values()).filter(bookie -> bookie.getName().equals(name)).collect(Collectors.toList());
+
+        return !result.isEmpty() ? result.get(0).getId() : 0L;
     }
 }

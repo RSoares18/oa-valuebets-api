@@ -5,6 +5,15 @@ public class RegisteredBet {
     private String id;
     private String market;
     private Long unix;
+    private Long bookieId;
+
+    public Long getBookieId() {
+        return bookieId;
+    }
+
+    public void setBookieId(Long bookieId) {
+        this.bookieId = bookieId;
+    }
 
     public Long getUnix() {
         return unix;
@@ -27,6 +36,13 @@ public class RegisteredBet {
         this.id = id;
         this.market = market;
         this.unix = unix;
+    }
+
+    public RegisteredBet(String id, String market, Long unix, Long bookieId) {
+        this.id = id;
+        this.market = market;
+        this.unix = unix;
+        this.bookieId = bookieId;
     }
 
     public RegisteredBet() {
