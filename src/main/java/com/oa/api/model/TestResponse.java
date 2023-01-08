@@ -19,7 +19,10 @@ public class TestResponse implements Serializable {
     private Double maxDrawdown;
     private Double hitRate;
     private Double roi;
+    private Double kellyCriteria;
     private Double kellyFactor;
+    private Double myStake;
+    private Double oddsPercentage;
     private int maxLeagueProgress;
     private int minGamesPlayed;
     private String country;
@@ -44,6 +47,30 @@ public class TestResponse implements Serializable {
         this.roi = roi;
         this.maxProfit = maxProfit;
         this.maxDrawdown = maxDrawdown;
+    }
+
+    public Double getOddsPercentage() {
+        return oddsPercentage;
+    }
+
+    public void setOddsPercentage(Double oddsPercentage) {
+        this.oddsPercentage = oddsPercentage;
+    }
+
+    public Double getMyStake() {
+        return myStake;
+    }
+
+    public void setMyStake(Double myStake) {
+        this.myStake = myStake;
+    }
+
+    public Double getKellyFactor() {
+        return kellyFactor;
+    }
+
+    public void setKellyFactor(Double kellyFactor) {
+        this.kellyFactor = kellyFactor;
     }
 
     public String getStartDate() {
@@ -78,12 +105,12 @@ public class TestResponse implements Serializable {
         this.country = country;
     }
 
-    public Double getKellyFactor() {
-        return kellyFactor;
+    public Double getKellyCriteria() {
+        return kellyCriteria;
     }
 
-    public void setKellyFactor(Double kellyFactor) {
-        this.kellyFactor = kellyFactor;
+    public void setKellyCriteria(Double kellyCriteria) {
+        this.kellyCriteria = kellyCriteria;
     }
 
     public int getMaxLeagueProgress() {

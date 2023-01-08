@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class FilterRequest implements Serializable {
 
+    private String filterName;
     private String bookie;
     private String market;
     private Double minOdds;
@@ -17,8 +18,9 @@ public class FilterRequest implements Serializable {
     private int minGamesPlayed;
     private int maxProgress;
 
-    public FilterRequest(int minGamesPlayed,String bookie, String market, Double minOdds, Double maxOdds, Double minProbability,
+    public FilterRequest(String filterName,int minGamesPlayed,String bookie, String market, Double minOdds, Double maxOdds, Double minProbability,
                          Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups, int maxProgress) {
+        this.filterName = filterName;
         this.bookie = bookie;
         this.market = market;
         this.minOdds = minOdds;
@@ -31,6 +33,14 @@ public class FilterRequest implements Serializable {
         this.countCups = countCups;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+    }
+
+    public String getFilterName() {
+        return filterName;
+    }
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
     }
 
     public FilterRequest() {

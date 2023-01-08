@@ -83,12 +83,14 @@ public class RestAPIController {
             List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
             String market = MarketMapper.getNameByKey(filterRequest.getMarket());
             String bookie = filterRequest.getBookie();
-            log.info("{} NEW GAMES FOR {} MARKET ON {}", upcomingBets.size(), market, bookie);
-            telegramBot.chunkMessage(upcomingBets, market, bookie);
+            String filterName = filterRequest.getFilterName();
+            log.info("{} - {} NEW GAMES FOR {} MARKET ON {}", filterRequest.getFilterName(), upcomingBets.size(), market, bookie);
+            telegramBot.chunkMessage(filterName,upcomingBets, market, bookie, false);
             telegramBot.onClosing();
             return upcomingBets;
         } catch(Exception e){
             log.info(e.getMessage(), e);
+            telegramBot.chunkMessage(filterRequest.getFilterName(), new ArrayList<>(), filterRequest.getMarket(), filterRequest.getBookie(), true);
             return new ArrayList<>();
         }
 
@@ -113,7 +115,7 @@ public class RestAPIController {
             }
 
             log.info("{} NEW GAMES TO BET!", upcomingBets.size());
-            telegramBot.chunkMessage(upcomingBets, "All Markets", "requested bookies");
+            telegramBot.chunkMessage("All Filters", upcomingBets, "All Markets", "requested bookies", false);
             telegramBot.onClosing();
             stopBotSession();
             return upcomingBets;
@@ -154,7 +156,7 @@ public class RestAPIController {
         }
     }
 
-    @Scheduled (cron="0 0/30 * * * *")
+    @Scheduled (cron="0 0/15 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
         registerBot(telegramBot);
         log.info("Starting scheduled upcoming request...");
@@ -164,6 +166,21 @@ public class RestAPIController {
         for(FilterRequest request : allRequests){
             getUpcoming(request);
         }
+        stopBotSession();
+    }
+
+    @Scheduled (cron="0 0 * * * *")
+    public void isAlive() {
+        registerBot(telegramBot);
+        log.info("Checking app status...");
+        try {
+            telegramBot.sendMessage("\u2747 Application Running");
+            log.info("App running!");
+        } catch(Exception e){
+            telegramBot.sendMessage("\u2757 Error checking application status");
+            log.error("Something wrong while checking status");
+        }
+
         stopBotSession();
     }
 

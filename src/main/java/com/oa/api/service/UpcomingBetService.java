@@ -22,6 +22,9 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
+    private final static Double BANKROLL = 1100.0;
+    private final static Double KELLY_FRACTIONAL = 0.04;
+
     String bookie;
 
     public List<RegisteredBetDTO> saveAll(List<RegisteredBet> bets){
@@ -194,6 +197,7 @@ public class UpcomingBetService {
 
     private UpcomingBet convertBetGameToUpcoming(BetGameDTO betGameDTO, Double odds, Double opening,Double value, Double kellyFactor, Double openingKellyFactor, String bookie){
         UpcomingBet bet = new UpcomingBet();
+        bet.setStake(BigDecimalRoundDoubleMain.roundDouble(BANKROLL*kellyFactor*KELLY_FRACTIONAL,2));
         bet.setHomeTeam(betGameDTO.getHome_name());
         bet.setAwayTeam(betGameDTO.getAway_name());
         bet.setOurOdds(betGameDTO.getOur_odds());

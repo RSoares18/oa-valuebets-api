@@ -19,6 +19,7 @@ public class UpcomingBet {
     private String bookmaker;
     private String competition;
     private Double openingKellyFactor;
+    private Double stake;
     private int competitionProgress;
     private Long unix;
 
@@ -40,6 +41,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public Double getStake() {
+        return stake;
+    }
+
+    public void setStake(Double stake) {
+        this.stake = stake;
     }
 
     public Long getUnix() {
@@ -193,6 +202,7 @@ public class UpcomingBet {
                 "\u26AA Opening Odds: " + openingOdds + "\n" +
                 "\uD83D\uDCC8 Value: " + BigDecimalRoundDoubleMain.roundDouble(value,2) + "%" + "\n" +
                 "\uD83D\uDCCA Opening Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(openingKellyFactor,3) + "\n" +
-                "\uD83D\uDCCA Current Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n\n\n\n";
+                "\uD83D\uDCCA Current Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n" +
+                "\uD83D\uDCB2 Stake: " + stake + "€" + "\n\n\n\n";
     }
 }

@@ -12,7 +12,10 @@ public class TestRequest implements Serializable {
     private Double maxProbability;
     private Double minValue;
     private Double maxValue;
+    private Double kellyCriteria;
     private Double kellyFactor;
+    private Double myStake;
+    private Double oddsPercentage;
     private boolean countFriendlies;
     private boolean countCups;
     private boolean openingOdds;
@@ -22,9 +25,24 @@ public class TestRequest implements Serializable {
     private String startDate;
     private String endDate;
 
+    public Double getOddsPercentage() {
+        return oddsPercentage;
+    }
 
-    public TestRequest(int minGamesPlayed, String bookie, String market,Double minOdds, Double maxOdds, Double minProbability,
-                       Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups, boolean openingOdds, int maxProgress) {
+    public void setOddsPercentage(Double oddsPercentage) {
+        this.oddsPercentage = oddsPercentage;
+    }
+
+    public Double getMyStake() {
+        return myStake;
+    }
+
+    public void setMyStake(Double myStake) {
+        this.myStake = myStake;
+    }
+
+    public TestRequest(int minGamesPlayed, String bookie, String market, Double minOdds, Double maxOdds, Double minProbability,
+                       Double minValue, Double maxValue, Double kellyCriteria, boolean countFriendlies, boolean countCups, boolean openingOdds, int maxProgress) {
         this.bookie = bookie;
         this.market = market;
         this.minOdds = minOdds;
@@ -35,9 +53,17 @@ public class TestRequest implements Serializable {
         this.countFriendlies = countFriendlies;
         this.countCups = countCups;
         this.openingOdds = openingOdds;
-        this.kellyFactor = kellyFactor;
+        this.kellyCriteria = kellyCriteria;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+    }
+
+    public Double getKellyFactor() {
+        return kellyFactor;
+    }
+
+    public void setKellyFactor(Double kellyFactor) {
+        this.kellyFactor = kellyFactor;
     }
 
     public String getStartDate() {
@@ -88,12 +114,12 @@ public class TestRequest implements Serializable {
         this.minGamesPlayed = minGamesPlayed;
     }
 
-    public Double getKellyFactor() {
-        return kellyFactor;
+    public Double getKellyCriteria() {
+        return kellyCriteria;
     }
 
-    public void setKellyFactor(Double kellyFactor) {
-        this.kellyFactor = kellyFactor;
+    public void setKellyCriteria(Double kellyCriteria) {
+        this.kellyCriteria = kellyCriteria;
     }
 
     public String getBookie() {

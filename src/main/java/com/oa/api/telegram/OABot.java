@@ -2,6 +2,7 @@ package com.oa.api.telegram;
 
 import com.google.common.collect.Lists;
 import com.oa.api.model.UpcomingBet;
+import com.oa.api.util.MarketMapper;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -29,15 +30,21 @@ public class OABot extends TelegramLongPollingBot {
 
     }
 
-    public void chunkMessage(List<UpcomingBet> upcomingBetList, String market, String bookie) {
+    public void chunkMessage(String filterName, List<UpcomingBet> upcomingBetList, String market, String bookie, boolean error) {
         List<List<UpcomingBet>> allLists = Lists.partition(upcomingBetList, 5);
 
-        if(allLists.isEmpty()){
+        if(error){
+            sendMessage("\u2757 There has been an error while trying to fetch new games for " + MarketMapper.getNameByKey(market) + " on " + bookie);
+        }
+        else {
+            for(List<UpcomingBet> list : allLists){
+                sendMessage("\uD83D\uDCCC " + filterName.toUpperCase() + "\n\n" + removeUnwantedCharacters(list.toString()));
+            }
+        }
+
+        /*if(allLists.isEmpty()){
             sendMessage("\uD83D\uDD34 No new games to bet on for " + market + " on " + bookie);
-        }
-        for(List<UpcomingBet> list : allLists){
-            sendMessage(removeUnwantedCharacters(list.toString()));
-        }
+        }*/
     }
 
     private String removeUnwantedCharacters(String listString) {
@@ -45,7 +52,7 @@ public class OABot extends TelegramLongPollingBot {
 
     }
 
-    private void sendMessage(String message){
+    public void sendMessage(String message){
         SendMessage request = new SendMessage();
         request.setChatId(chatId);
         request.setText(message);
