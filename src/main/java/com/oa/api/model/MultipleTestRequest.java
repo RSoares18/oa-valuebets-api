@@ -9,12 +9,21 @@ public class MultipleTestRequest implements Serializable {
     private String startDate;
     private String endDate;
     private List<TestRequest> requestList;
+    private Double myStake;
 
     public MultipleTestRequest(String bookie, String startDate, String endDate, List<TestRequest> requestList) {
         this.bookie = bookie;
         this.startDate = startDate;
         this.endDate = endDate;
         this.requestList = requestList;
+    }
+
+    public Double getMyStake() {
+        return myStake;
+    }
+
+    public void setMyStake(Double myStake) {
+        this.myStake = myStake;
     }
 
     public MultipleTestRequest() {

@@ -65,7 +65,7 @@ public class TestService {
         log.info("Total games to test " + gamesToTest.size());
 
         if(!gamesToTest.isEmpty()){
-            executeMultipleTest(requestList, response, gamesToTest, testRequest.getBookie());
+            executeMultipleTest(requestList, response, gamesToTest, testRequest.getBookie(), testRequest.getMyStake());
         }
 
 
@@ -73,7 +73,7 @@ public class TestService {
         return response;
     }
 
-    private void executeMultipleTest(List<TestRequest> requests, MultipleTestResponse response, List<BetGameDTO> gamesToTest, String bookie) {
+    private void executeMultipleTest(List<TestRequest> requests, MultipleTestResponse response, List<BetGameDTO> gamesToTest, String bookie, Double myStake) {
         int wins = 0;
         int losses = 0;
         Double currentDrawdown = 0.0;
@@ -91,37 +91,35 @@ public class TestService {
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
                             if (betGameDTO.isResult()) {
                                 wins++;
-                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO);
-                                returned = returned + (oddsToCalculate * STAKE);
+                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                                returned = returned + (oddsToCalculate * myStake);
                             } else {
                                 losses++;
                             }
 
-                            staked = staked + STAKE;
+                            staked = staked + myStake;
                             profit = returned - staked;
                             maxProfit = profit > maxProfit ? profit : maxProfit;
                             currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                             maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                         }
                     } else {
+                        boolean isKellyFactorConsidered = req.getKellyFactor() != null && !req.getKellyFactor().isNaN()  && req.getKellyFactor() != 1;
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
-                            Double kellyCriteriaCalc = 0.0;
-                            if (bookie.equals(Bookmakers.ONEXBET.getName())) {
-                                kellyCriteriaCalc = calculateKellyCriteria1xBet(betGameDTO, req.isOpeningOdds());
-                            } else if (bookie.equals(Bookmakers.BET365.getName())) {
-                                kellyCriteriaCalc = calculateKellyCriteriaBet365(betGameDTO, req.isOpeningOdds());
-                            } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
-                                kellyCriteriaCalc = calculateKellyCriteriaPinnacle(betGameDTO, req.isOpeningOdds());
-                            }
+                            Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), 1.00);
                             if (kellyCriteriaCalc >= req.getKellyCriteria()) {
+                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                                if(req.getOddsPercentage()!= 1.00){
+                                    kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), req.getOddsPercentage());
+                                }
+                                Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*req.getKellyFactor())) : myStake;
                                 if (betGameDTO.isResult()) {
                                     wins++;
-                                    Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO);
-                                    returned = returned + (oddsToCalculate * STAKE);
+                                    returned = returned + (oddsToCalculate * amountStaked);
                                 } else {
                                     losses++;
                                 }
-                                staked = staked + STAKE;
+                                staked = staked + amountStaked;
                                 profit = returned - staked;
                                 maxProfit = profit > maxProfit ? profit : maxProfit;
                                 currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
@@ -137,7 +135,7 @@ public class TestService {
 
         response.setMaxDrawdown(BigDecimalRoundDoubleMain.roundDouble(maxDrawdown, 2));
         response.setMaxProfit(BigDecimalRoundDoubleMain.roundDouble(maxProfit, 2));
-        response.setRoi(BigDecimalRoundDoubleMain.roundDouble(((profit * STAKE) / (staked)) * 100, 2));
+        response.setRoi(BigDecimalRoundDoubleMain.roundDouble((profit/staked) * 100, 2));
         response.setWins(wins);
         response.setLosses(losses);
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit, 2));
@@ -211,6 +209,21 @@ public class TestService {
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
+    private Double calculateKellyCriteria1xBetWithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_1xbet_odds()*oddsPercentage) : (betGameDTO.getLatest_1xbet_odds()*oddsPercentage)) -1.00;
+        return calculateKelly(betGameDTO, b_decimal_odds);
+    }
+
+    private Double calculateKellyCriteriaBet365WithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_b365_odds()*oddsPercentage) : (betGameDTO.getLatest_b365_odds()*oddsPercentage)) -1.00;
+        return calculateKelly(betGameDTO, b_decimal_odds);
+    }
+
+    private Double calculateKellyCriteriaPinnacleWithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_pinnacle_odds() * oddsPercentage) : (betGameDTO.getLatest_pinnacle_odds()*oddsPercentage)) -1.00;
+        return calculateKelly(betGameDTO, b_decimal_odds);
+    }
+
     private Double calculateKelly(BetGameDTO betGameDTO, Double bDecimalOdds){
         Double p_win = betGameDTO.getProbability()/100;
         Double q_lose = 1.00 - p_win;
@@ -249,19 +262,15 @@ public class TestService {
             boolean isKellyFactorConsidered = kellyFactor != null && !kellyFactor.isNaN()  && kellyFactor != 1;
             for(BetGameDTO betGameDTO : gamesToTest){
                 if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed) {
-                    Double kellyCriteriaCalc = 0.0;
-                    if (bookie.equals(Bookmakers.ONEXBET.getName())) {
-                        kellyCriteriaCalc = calculateKellyCriteria1xBet(betGameDTO, opening);
-                    } else if (bookie.equals(Bookmakers.BET365.getName())) {
-                        kellyCriteriaCalc = calculateKellyCriteriaBet365(betGameDTO, opening);
-                    } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
-                        kellyCriteriaCalc = calculateKellyCriteriaPinnacle(betGameDTO, opening);
-                    }
+                    Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,1.00);
                     if (kellyCriteriaCalc >= kellyCriteria) {
+                        Double oddsToCalculate = calculateOdds(opening, bookie, betGameDTO) * oddsPercentage;
+                        if(oddsPercentage!= 1.00){
+                            kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,oddsPercentage);
+                        }
                         Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*kellyFactor)) : myStake;
                         if (betGameDTO.isResult()) {
                             wins++;
-                            Double oddsToCalculate = calculateOdds(opening, bookie, betGameDTO) * oddsPercentage;
                             returned = returned + (oddsToCalculate * amountStaked);
                         } else {
                             losses++;
@@ -554,5 +563,28 @@ public class TestService {
         log.info("Date converted: " + date);
         return dateConverted.getTime() / 1000;
 
+    }
+
+    private Double calculateKellyFactorCalc(String bookie, BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
+        Double kellyCriteriaCalc = 0.0;
+        if(oddsPercentage == 1.00){
+            if (bookie.equals(Bookmakers.ONEXBET.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteria1xBet(betGameDTO, opening);
+            } else if (bookie.equals(Bookmakers.BET365.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteriaBet365(betGameDTO, opening);
+            } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteriaPinnacle(betGameDTO, opening);
+            }
+        } else {
+            if (bookie.equals(Bookmakers.ONEXBET.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteria1xBetWithPercentage(betGameDTO, opening, oddsPercentage);
+            } else if (bookie.equals(Bookmakers.BET365.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteriaBet365WithPercentage(betGameDTO, opening,oddsPercentage);
+            } else if (bookie.equals(Bookmakers.PINNACLE.getName())) {
+                kellyCriteriaCalc = calculateKellyCriteriaPinnacleWithPercentage(betGameDTO, opening, oddsPercentage);
+            }
+        }
+
+        return kellyCriteriaCalc;
     }
 }

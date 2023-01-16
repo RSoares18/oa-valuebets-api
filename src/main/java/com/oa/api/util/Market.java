@@ -9,7 +9,9 @@ public enum Market {
     UNDER_25("4", "u25_probability"),
     OVER_25("5", "o25_probability"),
     BTTS("6", "btts_probability"),
-    OVER_85_CORNERS("7", "o85_corners_probability")
+    OVER_85_CORNERS("7", "o85_corners_probability"),
+    UNDER_35("8", "u35_probability"),
+    OVER_35("9", "o35_probability")
     ;
 
     private String id;
