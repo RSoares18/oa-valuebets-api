@@ -11,7 +11,9 @@ public enum Market {
     BTTS("6", "btts_probability"),
     OVER_85_CORNERS("7", "o85_corners_probability"),
     UNDER_35("8", "u35_probability"),
-    OVER_35("9", "o35_probability")
+    OVER_35("9", "o35_probability"),
+    HOME_O15("10", "home_goals_15_probability"),
+    AWAY_O15("11", "away_goals_15_probability")
     ;
 
     private String id;

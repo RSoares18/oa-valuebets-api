@@ -37,6 +37,8 @@ public class RestAPIController {
 
     private static final Logger log = LoggerFactory.getLogger(RestAPIController.class);
 
+    private static final String PAGE_EXTENSION = "&page=";
+
     OABot telegramBot = new OABot();
 
     @Autowired
@@ -64,23 +66,47 @@ public class RestAPIController {
     @GetMapping(value ="/results")
     public List<HashMap<String, Object>> getResults(){
         int existingRecords = betGameService.getTotalRecords();
+        List<HashMap<String, Object>> allGames = new ArrayList<>();
         String uri = "https://data.oddalerts.com/api/value/results?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
         RestTemplate restTemplate = new RestTemplate();
-        List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
-        for(HashMap<String, Object> betGame : result){
-            betGameService.createBetGame(betGame);
+        HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
+        int pages = (Integer) globalInfo.get("info").get("pages");
+        int currentPage = 1;
+
+        while(currentPage <= pages){
+            restTemplate = new RestTemplate();
+            globalInfo = restTemplate.getForObject(uri + PAGE_EXTENSION + currentPage, HashMap.class);
+            List<HashMap<String, Object>> result = (List<HashMap<String, Object>>) globalInfo.get("data");
+            for(HashMap<String, Object> betGame : result){
+                betGameService.createBetGame(betGame);
+            }
+            allGames.addAll(result);
+            currentPage++;
         }
+
+
         log.info("[OA SERVICE] Inserted: {} games in the DB", (betGameService.getTotalRecords()-existingRecords));
-        return result;
+        return allGames;
     }
 
     @PostMapping(value ="/upcoming")
     public List<UpcomingBet> getUpcoming(@RequestBody FilterRequest filterRequest) throws UnsupportedEncodingException {
         try{
+            List<UpcomingBet> upcomingBets = new ArrayList<>();
             String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
             RestTemplate restTemplate = new RestTemplate();
-            List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
-            List<UpcomingBet> upcomingBets = upcomingBetService.executeFiltering(filterRequest, result);
+            HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
+            int pages = (Integer) globalInfo.get("info").get("pages");
+            int currentPage = 1;
+
+            while(currentPage <= pages){
+                restTemplate = new RestTemplate();
+                globalInfo = restTemplate.getForObject(uri + PAGE_EXTENSION + currentPage, HashMap.class);
+                List<HashMap<String,Object>> result = (List<HashMap<String, Object>>) globalInfo.get("data");
+                upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
+                currentPage++;
+            }
+
             String market = MarketMapper.getNameByKey(filterRequest.getMarket());
             String bookie = filterRequest.getBookie();
             String filterName = filterRequest.getFilterName();
@@ -100,16 +126,27 @@ public class RestAPIController {
     public List<UpcomingBet> getUpcoming() throws UnsupportedEncodingException {
         try{
             log.info("Get All Upcoming Requests");
+            List<UpcomingBet> upcomingBets = new ArrayList<>();
             String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
             RestTemplate restTemplate = new RestTemplate();
-            List<HashMap<String, Object>> result = restTemplate.getForObject(uri, List.class);
-            UpcomingRequests requests = new UpcomingRequests();
-            List<FilterRequest> allRequests = requests.getAllRequests();
-            List<UpcomingBet> upcomingBets = new ArrayList<>();
+            HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
+            int pages = (Integer) globalInfo.get("info").get("pages");
+            int currentPage = 1;
 
-            for(FilterRequest filterRequest : allRequests){
-                upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
+            while(currentPage <= pages){
+                restTemplate = new RestTemplate();
+                globalInfo = restTemplate.getForObject(uri + PAGE_EXTENSION + currentPage, HashMap.class);
+                List<HashMap<String,Object>> result = (List<HashMap<String, Object>>) globalInfo.get("data");
+                UpcomingRequests requests = new UpcomingRequests();
+                List<FilterRequest> allRequests = requests.getAllRequests();
+
+
+                for(FilterRequest filterRequest : allRequests){
+                    upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
+                }
+                currentPage++;
             }
+
             if(!botSession.isRunning()){
                 registerBot(telegramBot);
             }
