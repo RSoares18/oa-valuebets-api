@@ -16,6 +16,7 @@ public class MultipleTestResponse implements Serializable {
     private Double roi;
     private String startDate;
     private String endDate;
+    private List <TestedGame> testedGames;
 
     public MultipleTestResponse() {
     }
@@ -32,6 +33,14 @@ public class MultipleTestResponse implements Serializable {
         this.roi = roi;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public List<TestedGame> getTestedGames() {
+        return testedGames;
+    }
+
+    public void setTestedGames(List<TestedGame> testedGames) {
+        this.testedGames = testedGames;
     }
 
     public List<String> getMarkets() {

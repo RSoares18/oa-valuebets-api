@@ -1,10 +1,7 @@
 package com.oa.api.service;
 
 import com.oa.api.entity.BetGameDTO;
-import com.oa.api.model.MultipleTestRequest;
-import com.oa.api.model.MultipleTestResponse;
-import com.oa.api.model.TestRequest;
-import com.oa.api.model.TestResponse;
+import com.oa.api.model.*;
 import com.oa.api.util.BigDecimalRoundDoubleMain;
 import com.oa.api.util.Bookmakers;
 import org.jboss.logging.Logger;
@@ -74,6 +71,7 @@ public class TestService {
     }
 
     private void executeMultipleTest(List<TestRequest> requests, MultipleTestResponse response, List<BetGameDTO> gamesToTest, String bookie, Double myStake) {
+        List<TestedGame> testedGames = new ArrayList<>();
         int wins = 0;
         int losses = 0;
         Double currentDrawdown = 0.0;
@@ -83,17 +81,21 @@ public class TestService {
 
         Double staked = 0.0;
         Double returned = 0.0;
+        int betNo = 1;
 
         for (BetGameDTO betGameDTO : gamesToTest) {
             for (TestRequest req : requests) {
                 if (req.getMarket().equals(betGameDTO.getMarket())) {
                     if (req.getKellyCriteria() == 0.00) {
+                        Double profitLoss = 0.0;
+                        Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
                             if (betGameDTO.isResult()) {
                                 wins++;
-                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                                profitLoss = oddsToCalculate * myStake - myStake;
                                 returned = returned + (oddsToCalculate * myStake);
                             } else {
+                                profitLoss = profitLoss - myStake;
                                 losses++;
                             }
 
@@ -102,28 +104,40 @@ public class TestService {
                             maxProfit = profit > maxProfit ? profit : maxProfit;
                             currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                             maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                            testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                            betNo++;
                         }
                     } else {
                         boolean isKellyFactorConsidered = req.getKellyFactor() != null && !req.getKellyFactor().isNaN()  && req.getKellyFactor() != 1;
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
+                            Double profitLoss = 0.0;
                             Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), 1.00);
                             if (kellyCriteriaCalc >= req.getKellyCriteria()) {
                                 Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
                                 if(req.getOddsPercentage()!= 1.00){
                                     kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), req.getOddsPercentage());
                                 }
-                                Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*req.getKellyFactor())) : myStake;
-                                if (betGameDTO.isResult()) {
-                                    wins++;
-                                    returned = returned + (oddsToCalculate * amountStaked);
-                                } else {
-                                    losses++;
+                                if(kellyCriteriaCalc >= req.getKellyCriteria()){
+                                    Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*req.getKellyFactor())) : myStake;
+                                    if (betGameDTO.isResult()) {
+                                        wins++;
+                                        profitLoss = oddsToCalculate * amountStaked - amountStaked;
+                                        returned = returned + (oddsToCalculate * amountStaked);
+                                    } else {
+                                        profitLoss = profitLoss - amountStaked;
+                                        losses++;
+                                    }
+                                    staked = staked + amountStaked;
+                                    profit = returned - staked;
+                                    maxProfit = profit > maxProfit ? profit : maxProfit;
+                                    currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
+                                    maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                                    testedGames.add(createTestedGame(betNo,oddsToCalculate, amountStaked, betGameDTO.getMarket(),
+                                            betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                    betNo++;
                                 }
-                                staked = staked + amountStaked;
-                                profit = returned - staked;
-                                maxProfit = profit > maxProfit ? profit : maxProfit;
-                                currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
-                                maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+
                             }
                         }
                     }
@@ -141,7 +155,7 @@ public class TestService {
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit, 2));
         response.setNumBets(wins + losses);
         response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double) wins / response.getNumBets()) * 100, 2) : 0.00);
-
+        response.setTestedGames(testedGames);
     }
 
 
@@ -230,7 +244,13 @@ public class TestService {
         return ((bDecimalOdds*p_win)-q_lose)/bDecimalOdds;
     }
 
+    private TestedGame createTestedGame(int betNo,Double odds, Double stake, String market,String home, String away, Double currentProfit, Double profitLoss){
+        return new TestedGame(betNo,home, away,market, BigDecimalRoundDoubleMain.roundDouble(odds,2), BigDecimalRoundDoubleMain.roundDouble(stake, 2), BigDecimalRoundDoubleMain.roundDouble(profitLoss, 2), BigDecimalRoundDoubleMain.roundDouble(currentProfit, 2));
+
+    }
+
     private void executeTest(TestResponse response, List<BetGameDTO> gamesToTest, boolean opening, String bookie, Double kellyCriteria, Double kellyFactor, Double myStake,int minGamesPlayed, Double oddsPercentage){
+        List<TestedGame> testedGames = new ArrayList<>();
         int wins = 0;
         int losses = 0;
         Double currentDrawdown = 0.0;
@@ -240,15 +260,20 @@ public class TestService {
 
         Double staked = 0.0;
         Double returned = 0.0;
+        int betNo = 1;
+
 
         if(kellyCriteria == 0.00){
             for(BetGameDTO betGameDTO : gamesToTest){
+                Double profitLoss = 0.0;
                 if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed){
+                    Double oddsToCalculate = calculateOdds(opening,bookie, betGameDTO) * oddsPercentage;
                     if(betGameDTO.isResult()){
                         wins++;
-                        Double oddsToCalculate = calculateOdds(opening,bookie, betGameDTO) * oddsPercentage;
+                        profitLoss = oddsToCalculate * myStake - myStake;
                         returned = returned + (oddsToCalculate * myStake);
                     } else {
+                        profitLoss = profitLoss - myStake;
                         losses++;
                     }
                     staked = staked + myStake;
@@ -256,30 +281,41 @@ public class TestService {
                     maxProfit = profit > maxProfit ? profit : maxProfit;
                     currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                     maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                    testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
+                            betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                    betNo++;
                 }
             }
         } else {
             boolean isKellyFactorConsidered = kellyFactor != null && !kellyFactor.isNaN()  && kellyFactor != 1;
             for(BetGameDTO betGameDTO : gamesToTest){
                 if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed) {
+                    Double profitLoss = 0.0;
                     Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,1.00);
                     if (kellyCriteriaCalc >= kellyCriteria) {
                         Double oddsToCalculate = calculateOdds(opening, bookie, betGameDTO) * oddsPercentage;
                         if(oddsPercentage!= 1.00){
                             kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,oddsPercentage);
                         }
-                        Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*kellyFactor)) : myStake;
-                        if (betGameDTO.isResult()) {
-                            wins++;
-                            returned = returned + (oddsToCalculate * amountStaked);
-                        } else {
-                            losses++;
+                        if (kellyCriteriaCalc >= kellyCriteria) {
+                            Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*kellyFactor)) : myStake;
+                            if (betGameDTO.isResult()) {
+                                wins++;
+                                profitLoss = oddsToCalculate * amountStaked - amountStaked;
+                                returned = returned + (oddsToCalculate * amountStaked);
+                            } else {
+                                profitLoss = profitLoss - amountStaked;
+                                losses++;
+                            }
+                            staked = staked + amountStaked;
+                            profit = returned - staked;
+                            maxProfit = profit > maxProfit ? profit : maxProfit;
+                            currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
+                            maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
+                            testedGames.add(createTestedGame(betNo,oddsToCalculate, amountStaked, betGameDTO.getMarket(),
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                            betNo++;
                         }
-                        staked = staked + amountStaked;
-                        profit = returned - staked;
-                        maxProfit = profit > maxProfit ? profit : maxProfit;
-                        currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
-                        maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                     }
                 }
             }
@@ -293,6 +329,7 @@ public class TestService {
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit,2));
         response.setNumBets(wins+losses);
         response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double)wins / response.getNumBets()) * 100,2) : 0.00);
+        response.setTestedGames(testedGames);
 
     }
 

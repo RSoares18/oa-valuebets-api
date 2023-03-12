@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public enum MarketMapper {
 
     U25("u25_probability", "Under 2.5"),
+    U35("u35_probability", "Under 3.5"),
     O25("o25_probability", "Over 2.5"),
     HOME("home_win_probability", "Home Win"),
     AWAY("away_win_probability", "Away Win"),

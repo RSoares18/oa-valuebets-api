@@ -1,6 +1,7 @@
 package com.oa.api.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class TestResponse implements Serializable {
 
@@ -28,6 +29,7 @@ public class TestResponse implements Serializable {
     private String country;
     private String startDate;
     private String endDate;
+    private List<TestedGame> testedGames;
 
     public TestResponse(){}
 
@@ -47,6 +49,14 @@ public class TestResponse implements Serializable {
         this.roi = roi;
         this.maxProfit = maxProfit;
         this.maxDrawdown = maxDrawdown;
+    }
+
+    public List<TestedGame> getTestedGames() {
+        return testedGames;
+    }
+
+    public void setTestedGames(List<TestedGame> testedGames) {
+        this.testedGames = testedGames;
     }
 
     public Double getOddsPercentage() {

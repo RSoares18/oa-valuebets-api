@@ -180,7 +180,8 @@ public class UpcomingBetService {
             if((upcomingBet.getMarket().equals(MarketMapper.HOME.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.O25.getName()))
                 || (upcomingBet.getMarket().equals(MarketMapper.U25.getName()))
-                || (upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))){
+                || (upcomingBet.getMarket().equals(MarketMapper.AWAY.getName()))
+                    || (upcomingBet.getMarket().equals(MarketMapper.U35.getName()))){
                 result.add(new RegisteredBet(upcomingBet.getId(),MarketMapper.getKeyByName(upcomingBet.getMarket()), upcomingBet.getUnix(),Bookmakers.getIdByName(upcomingBet.getBookmaker())));
             }
         }
