@@ -346,11 +346,11 @@ public class TestService {
         } else {
             switch (bookie){
                 case "1xBet":
-                    return betGameDTO.getLatest_1xbet_odds();
+                    return betGameDTO.getPeak_1xbet_odds();
                 case "Bet365":
-                    return betGameDTO.getLatest_b365_odds();
+                    return betGameDTO.getPeak_b365_odds();
                 case "Pinnacle":
-                    return betGameDTO.getLatest_pinnacle_odds();
+                    return betGameDTO.getPeak_pinnacle_odds();
             }
         }
         return 0.0;
@@ -372,7 +372,7 @@ public class TestService {
                     }
                 }
             } else {
-                Double latestOdds = game.getLatest_1xbet_odds();
+                Double latestOdds = game.getPeak_1xbet_odds();
                 if(latestOdds!= null && latestOdds >= request.getMinOdds() && latestOdds <= request.getMaxOdds()) {
                     Double value = calculateValue(latestOdds, game.getOur_odds());
                     if(value!= null
@@ -518,7 +518,7 @@ public class TestService {
                 }
 
             } else {
-                Double latestOdds = game.getLatest_pinnacle_odds();
+                Double latestOdds = game.getPeak_pinnacle_odds();
                 if(latestOdds!= null && latestOdds >= request.getMinOdds() && latestOdds <= request.getMaxOdds()) {
                     Double value = calculateValue(latestOdds, game.getOur_odds());
                     if(value != null
@@ -551,9 +551,9 @@ public class TestService {
                 }
 
             } else {
-                Double latestOdds = game.getLatest_b365_odds();
-                if(latestOdds!= null && latestOdds >= request.getMinOdds() && latestOdds <= request.getMaxOdds()) {
-                    Double value = calculateValue(latestOdds, game.getOur_odds());
+                Double peakOdds = game.getPeak_b365_odds();
+                if(peakOdds!= null && peakOdds >= request.getMinOdds() && peakOdds <= request.getMaxOdds()) {
+                    Double value = calculateValue(peakOdds, game.getOur_odds());
                     if(value != null
                             && value >= request.getMinValue()
                             && value <= request.getMaxValue()){

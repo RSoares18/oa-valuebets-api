@@ -196,6 +196,7 @@ public class UpcomingBet {
                 "\uD83D\uDCCA Market: " + market + "\n" +
                 "\uD83D\uDCDA Bookmaker: " + bookmaker + "\n" +
                 "\uD83C\uDFC6 " + competition +  "\n" +
+                "\uD83C\uDFC1 Progress: " + competitionProgress +  "% \n" +
                 "\u26BD " + homeTeam + " vs " + awayTeam + "\n" +
                 "\uD83D\uDCBB Probability: " + probability + "% " + "(" + ourOdds + ")" + "\n" +
                 "\u26A1 Current Odds: " + bookieOdds + " (" + diffMovement + "%) " + "\n" +

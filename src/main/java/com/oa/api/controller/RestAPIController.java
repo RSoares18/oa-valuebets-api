@@ -110,7 +110,7 @@ public class RestAPIController {
             String market = MarketMapper.getNameByKey(filterRequest.getMarket());
             String bookie = filterRequest.getBookie();
             String filterName = filterRequest.getFilterName();
-            log.info("{} - {} NEW GAMES FOR {} MARKET ON {}", filterRequest.getFilterName(), upcomingBets.size(), market, bookie);
+            //log.info("{} - {} NEW GAMES FOR {} MARKET ON {}", filterRequest.getFilterName(), upcomingBets.size(), market, bookie);
             telegramBot.chunkMessage(filterName,upcomingBets, market, bookie, false);
             telegramBot.onClosing();
             return upcomingBets;
@@ -125,6 +125,7 @@ public class RestAPIController {
     @GetMapping(value ="/allUpcoming")
     public List<UpcomingBet> getUpcoming() throws UnsupportedEncodingException {
         try{
+            upcomingBetService.setHomewins(0);
             log.info("Get All Upcoming Requests");
             List<UpcomingBet> upcomingBets = new ArrayList<>();
             String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
@@ -132,6 +133,7 @@ public class RestAPIController {
             HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
             int pages = (Integer) globalInfo.get("info").get("pages");
             int currentPage = 1;
+            int homesRequests = 0;
 
             while(currentPage <= pages){
                 restTemplate = new RestTemplate();
@@ -139,7 +141,6 @@ public class RestAPIController {
                 List<HashMap<String,Object>> result = (List<HashMap<String, Object>>) globalInfo.get("data");
                 UpcomingRequests requests = new UpcomingRequests();
                 List<FilterRequest> allRequests = requests.getAllRequests();
-
 
                 for(FilterRequest filterRequest : allRequests){
                     upcomingBets.addAll(upcomingBetService.executeFiltering(filterRequest, result));
@@ -150,6 +151,8 @@ public class RestAPIController {
             if(!botSession.isRunning()){
                 registerBot(telegramBot);
             }
+
+            log.info("{} Home wins total", upcomingBetService.getHomewins());
 
             log.info("{} NEW GAMES TO BET!", upcomingBets.size());
             telegramBot.chunkMessage("All Filters", upcomingBets, "All Markets", "requested bookies", false);
@@ -193,16 +196,18 @@ public class RestAPIController {
         }
     }
 
-    @Scheduled (cron="0 0/15 * * * *")
+    @Scheduled (cron="0 0/5 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
         registerBot(telegramBot);
-        log.info("Starting scheduled upcoming request...");
+        log.info("STARTED scheduled upcoming request...");
         UpcomingRequests requests = new UpcomingRequests();
         List<FilterRequest> allRequests = requests.getAllRequests();
 
         for(FilterRequest request : allRequests){
             getUpcoming(request);
         }
+
+        log.info("FINISHED scheduled upcoming request");
         stopBotSession();
     }
 
