@@ -113,12 +113,12 @@ public class TestService {
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
                             Double profitLoss = 0.0;
                             Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), 1.00);
-                            if (kellyCriteriaCalc >= req.getKellyCriteria()) {
+                            if (kellyCriteriaCalc >= req.getKellyCriteria() && kellyCriteriaCalc <= req.getMaxKellyCriteria()) {
                                 Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
                                 if(req.getOddsPercentage()!= 1.00){
                                     kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), req.getOddsPercentage());
                                 }
-                                if(kellyCriteriaCalc >= req.getKellyCriteria()){
+                                if(kellyCriteriaCalc >= req.getKellyCriteria() && kellyCriteriaCalc <= req.getMaxKellyCriteria()){
                                     Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*req.getKellyFactor())) : myStake;
                                     if (betGameDTO.isResult()) {
                                         wins++;
@@ -172,6 +172,7 @@ public class TestService {
         response.setCountry(request.getCountry());
         response.setMaxProbability(request.getMaxProbability());
         response.setKellyCriteria(request.getKellyCriteria());
+        response.setMaxKellyCriteria(request.getMaxKellyCriteria());
         response.setKellyFactor(request.getKellyFactor());
         response.setMyStake(request.getMyStake());
         response.setStartDate(request.getStartDate());
@@ -203,7 +204,7 @@ public class TestService {
         log.info("Total market games " + marketGames.size());
         log.info("Total games to test " + gamesToTest.size());
         if(!gamesToTest.isEmpty()){
-            executeTest(response, gamesToTest, request.isOpeningOdds(), request.getBookie(), request.getKellyCriteria(), request.getKellyFactor(),request.getMyStake(),request.getMinGamesPlayed(), request.getOddsPercentage());
+            executeTest(response, gamesToTest, request.isOpeningOdds(), request.getBookie(), request.getKellyCriteria(), request.getMaxKellyCriteria(), request.getKellyFactor(),request.getMyStake(),request.getMinGamesPlayed(), request.getOddsPercentage(), request.isCompareToPinnacle());
         }
         return response;
     }
@@ -249,7 +250,7 @@ public class TestService {
 
     }
 
-    private void executeTest(TestResponse response, List<BetGameDTO> gamesToTest, boolean opening, String bookie, Double kellyCriteria, Double kellyFactor, Double myStake,int minGamesPlayed, Double oddsPercentage){
+    private void executeTest(TestResponse response, List<BetGameDTO> gamesToTest, boolean opening, String bookie, Double kellyCriteria, Double maxKellyCriteria, Double kellyFactor, Double myStake,int minGamesPlayed, Double oddsPercentage, boolean compareToPinnacle){
         List<TestedGame> testedGames = new ArrayList<>();
         int wins = 0;
         int losses = 0;
@@ -266,7 +267,7 @@ public class TestService {
         if(kellyCriteria == 0.00){
             for(BetGameDTO betGameDTO : gamesToTest){
                 Double profitLoss = 0.0;
-                if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed){
+                if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie)))){
                     Double oddsToCalculate = calculateOdds(opening,bookie, betGameDTO) * oddsPercentage;
                     if(betGameDTO.isResult()){
                         wins++;
@@ -281,9 +282,18 @@ public class TestService {
                     maxProfit = profit > maxProfit ? profit : maxProfit;
                     currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                     maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
-                    testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
-                            betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
-                    betNo++;
+                    if(compareToPinnacle){
+                        if(checkPinnacle(betGameDTO, bookie)){
+                            testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                            betNo++;
+                        }
+                    } else {
+                        testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
+                                betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                        betNo++;
+                    }
+
                 }
             }
         } else {
@@ -292,12 +302,12 @@ public class TestService {
                 if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed) {
                     Double profitLoss = 0.0;
                     Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,1.00);
-                    if (kellyCriteriaCalc >= kellyCriteria) {
+                    if (kellyCriteriaCalc >= kellyCriteria && kellyCriteriaCalc <= maxKellyCriteria) {
                         Double oddsToCalculate = calculateOdds(opening, bookie, betGameDTO) * oddsPercentage;
                         if(oddsPercentage!= 1.00){
                             kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,oddsPercentage);
                         }
-                        if (kellyCriteriaCalc >= kellyCriteria) {
+                        if (kellyCriteriaCalc >= (kellyCriteria) && kellyCriteriaCalc <= maxKellyCriteria && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie)))) {
                             Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*kellyFactor)) : myStake;
                             if (betGameDTO.isResult()) {
                                 wins++;
@@ -315,6 +325,7 @@ public class TestService {
                             testedGames.add(createTestedGame(betNo,oddsToCalculate, amountStaked, betGameDTO.getMarket(),
                                     betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
                             betNo++;
+
                         }
                     }
                 }
@@ -331,6 +342,21 @@ public class TestService {
         response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double)wins / response.getNumBets()) * 100,2) : 0.00);
         response.setTestedGames(testedGames);
 
+    }
+
+    private boolean checkPinnacle(BetGameDTO betGameDTO, String bookie){
+
+        boolean isPinnacleHigher1xOrNull = betGameDTO.getOpening_1xbet_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_1xbet_odds()));
+        boolean isPinnacleHigherOrNull = betGameDTO.getOpening_b365_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_b365_odds()));
+        boolean isPinnacleHigherOr365Null = betGameDTO.getOpening_b365_odds() != null && betGameDTO.getOpening_pinnacle_odds() != null &&(betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_b365_odds());
+        if(bookie.equals(Bookmakers.BET365.getName()) && (isPinnacleHigherOrNull)){
+            return true;
+        } else if((bookie.equals(Bookmakers.PINNACLE.getName()) && (isPinnacleHigherOr365Null))){
+            return true;
+        } else if(bookie.equals(Bookmakers.ONEXBET.getName()) && (isPinnacleHigher1xOrNull)){
+            return true;
+        }
+        return false;
     }
 
     private Double calculateOdds(boolean opening, String bookie, BetGameDTO betGameDTO){

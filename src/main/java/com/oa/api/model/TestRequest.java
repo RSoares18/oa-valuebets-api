@@ -13,12 +13,14 @@ public class TestRequest implements Serializable {
     private Double minValue;
     private Double maxValue;
     private Double kellyCriteria;
+    private Double maxKellyCriteria;
     private Double kellyFactor;
     private Double myStake;
     private Double oddsPercentage;
     private boolean countFriendlies;
     private boolean countCups;
     private boolean openingOdds;
+    private boolean compareToPinnacle;
     private int minGamesPlayed;
     private int maxProgress;
     private String country;
@@ -56,6 +58,14 @@ public class TestRequest implements Serializable {
         this.kellyCriteria = kellyCriteria;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+    }
+
+    public boolean isCompareToPinnacle() {
+        return compareToPinnacle;
+    }
+
+    public void setCompareToPinnacle(boolean compareToPinnacle) {
+        this.compareToPinnacle = compareToPinnacle;
     }
 
     public Double getKellyFactor() {
@@ -200,6 +210,14 @@ public class TestRequest implements Serializable {
 
     public void setOpeningOdds(boolean openingOdds) {
         this.openingOdds = openingOdds;
+    }
+
+    public Double getMaxKellyCriteria() {
+        return maxKellyCriteria;
+    }
+
+    public void setMaxKellyCriteria(Double maxKellyCriteria) {
+        this.maxKellyCriteria = maxKellyCriteria;
     }
 
     @Override

@@ -21,6 +21,7 @@ public class TestResponse implements Serializable {
     private Double hitRate;
     private Double roi;
     private Double kellyCriteria;
+    private Double maxKellyCriteria;
     private Double kellyFactor;
     private Double myStake;
     private Double oddsPercentage;
@@ -249,6 +250,14 @@ public class TestResponse implements Serializable {
 
     public void setRoi(Double roi) {
         this.roi = roi;
+    }
+
+    public Double getMaxKellyCriteria() {
+        return maxKellyCriteria;
+    }
+
+    public void setMaxKellyCriteria(Double maxKellyCriteria) {
+        this.maxKellyCriteria = maxKellyCriteria;
     }
 
     @Override

@@ -8,6 +8,7 @@ public enum Bookmakers {
 
     ONEXBET(3,"1xBet"),
     PINNACLE (1, "Pinnacle"),
+    WILLIAM_HILL (4, "WilliamHill"),
     BET365(2, "Bet365");
 
     private long id;

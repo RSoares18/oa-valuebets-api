@@ -1,6 +1,9 @@
 package com.oa.api.model;
 
 import com.oa.api.util.BigDecimalRoundDoubleMain;
+import com.oa.api.util.Bookmakers;
+import com.oa.api.util.Market;
+import com.oa.api.util.MarketMapper;
 
 public class UpcomingBet {
 
@@ -12,6 +15,8 @@ public class UpcomingBet {
     private Double ourOdds;
     private Double bookieOdds;
     private Double openingOdds;
+    private Double opening365Odds;
+    private Double opening1xOdds;
     private Double value;
     private Double kellyFactor;
     private Double probability;
@@ -41,6 +46,22 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public Double getOpening365Odds() {
+        return opening365Odds;
+    }
+
+    public void setOpening365Odds(Double opening365Odds) {
+        this.opening365Odds = opening365Odds;
+    }
+
+    public Double getOpening1xOdds() {
+        return opening1xOdds;
+    }
+
+    public void setOpening1xOdds(Double opening1xOdds) {
+        this.opening1xOdds = opening1xOdds;
     }
 
     public Double getStake() {
@@ -201,9 +222,54 @@ public class UpcomingBet {
                 "\uD83D\uDCBB Probability: " + probability + "% " + "(" + ourOdds + ")" + "\n" +
                 "\u26A1 Current Odds: " + bookieOdds + " (" + diffMovement + "%) " + "\n" +
                 "\u26AA Opening Odds: " + openingOdds + "\n" +
+                        showFor365Or1xBetRequests(bookmaker, market, probability*0.01) +
+                        showForPinnacleRequests(bookmaker, market, probability*0.01) +
                 "\uD83D\uDCC8 Value: " + BigDecimalRoundDoubleMain.roundDouble(value,2) + "%" + "\n" +
                 "\uD83D\uDCCA Opening Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(openingKellyFactor,3) + "\n" +
                 "\uD83D\uDCCA Current Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n" +
                 "\uD83D\uDCB2 Stake: " + stake + "€" + "\n\n\n\n";
+    }
+
+    private String showFor365Or1xBetRequests(String bookmaker, String market, Double probability){
+        if((bookmaker.equals(Bookmakers.ONEXBET.getName()) || bookmaker.equals(Bookmakers.BET365.getName())) && !market.equals(Market.UNDER_35.getName())){
+            if(MarketMapper.getKeyByName(market).equals(Market.AWAY_WIN.getName())){
+                double minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.15-probability) )+ 1,2);
+                return "\u2797 Min. Odds (KC): " + minKCOdds + "\n";
+            }
+            if(MarketMapper.getKeyByName(market).equals(Market.HOME_WIN.getName())){
+                double minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.20-probability)) + 1,2);
+                return "\u2797 Min. Odds (KC): " + minKCOdds + "\n";
+            }
+        }
+        return "";
+    }
+
+    private String showForPinnacleRequests(String bookmaker, String market, Double probability){
+        double minKCOdds = 0;
+        if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && MarketMapper.getKeyByName(market).equals(Market.HOME_WIN.getName())){
+            minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.20-probability) )+ 1,2);
+        }
+
+        if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && MarketMapper.getKeyByName(market).equals(Market.AWAY_WIN.getName())){
+            minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.15-probability) )+ 1,2);
+        }
+        if(minKCOdds != 0){
+            String line365 = opening365Odds != null && opening365Odds != 0.0 ? "\u2797 Bet365 Opening Odd: " + opening365Odds + "(Min KC Odds " + minKCOdds + ")" + "\n" : "";
+            String line1x = opening1xOdds != null && opening1xOdds != 0.0 ? "\u2797 1xBet Opening Odd: " + opening1xOdds + "(Min KC Odds " + minKCOdds + ")" + "\n" : "";
+            if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && !MarketMapper.getKeyByName(market).equals(Market.UNDER_35.getName())){
+                return line365 + line1x;
+            }
+        }
+
+        return "";
+    }
+
+    private double getLower(Double valueA, Double valueB){
+        if(valueA > valueB){
+            return valueB;
+        } else {
+            return valueA;
+        }
+
     }
 }

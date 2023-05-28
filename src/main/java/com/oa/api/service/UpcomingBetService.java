@@ -156,7 +156,7 @@ public class UpcomingBetService {
                     if(criteriaMatch(betGameDTO,request)){
 
                             Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request)){
+                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request) && checkPinnacle(openingOdds, bookie, betGameDTO.getOpening_b365_odds(), betGameDTO.getOpening_1xbet_odds())){
                                 upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, openingKellyFactorCalc,bookie));
                             }
                         }
@@ -210,6 +210,12 @@ public class UpcomingBetService {
         bet.setId(String.valueOf(betGameDTO.getGame_id()));
         bet.setDateKO(betGameDTO.getKo_human());
         bet.setOpeningOdds(opening);
+
+        if(bookie.equals(Bookmakers.PINNACLE.getName())){
+            bet.setOpening1xOdds(betGameDTO.getOpening_1xbet_odds() != null? betGameDTO.getOpening_1xbet_odds() : 0.00);
+            bet.setOpening365Odds(betGameDTO.getOpening_b365_odds() != null? betGameDTO.getOpening_b365_odds() : 0.00);
+        }
+
         bet.setBookmaker(bookie);
         bet.setCompetition(betGameDTO.getCompetition_country() + " - " + betGameDTO.getCompetition_name());
         bet.setOpeningKellyFactor(openingKellyFactor);
@@ -221,6 +227,22 @@ public class UpcomingBetService {
     private Double calculateValue(Double bookieOdds, Double ourOdds){
         Double diff = bookieOdds - ourOdds;
         return (diff/ourOdds) * 100.00;
+    }
+
+    private boolean checkPinnacle(Double currentRequestOpeningOdds, String bookmaker, Double opening365odds, Double opening1xOdds){
+        if(!bookmaker.equals(Bookmakers.PINNACLE.getName())){
+            return true;
+        }
+        else{
+            if(opening365odds != null && opening365odds <= currentRequestOpeningOdds){
+                return false;
+            }
+            if(opening1xOdds != null && opening1xOdds <= currentRequestOpeningOdds){
+                return false;
+            }
+        }
+        return true;
+
     }
 
     private boolean matchConditions(Double openingOdds, Double currentOdds, Double value, Double kellyFactor, Double openingKellyFactor, FilterRequest request){

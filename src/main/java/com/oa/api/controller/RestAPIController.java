@@ -38,6 +38,9 @@ public class RestAPIController {
     private static final Logger log = LoggerFactory.getLogger(RestAPIController.class);
 
     private static final String PAGE_EXTENSION = "&page=";
+    private static final String MARKET_EXTENSION = "&market=";
+
+
 
     OABot telegramBot = new OABot();
 
@@ -93,7 +96,7 @@ public class RestAPIController {
     public List<UpcomingBet> getUpcoming(@RequestBody FilterRequest filterRequest) throws UnsupportedEncodingException {
         try{
             List<UpcomingBet> upcomingBets = new ArrayList<>();
-            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
+            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP" + MARKET_EXTENSION + filterRequest.getMarket();
             RestTemplate restTemplate = new RestTemplate();
             HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
             int pages = (Integer) globalInfo.get("info").get("pages");
@@ -125,7 +128,6 @@ public class RestAPIController {
     @GetMapping(value ="/allUpcoming")
     public List<UpcomingBet> getUpcoming() throws UnsupportedEncodingException {
         try{
-            upcomingBetService.setHomewins(0);
             log.info("Get All Upcoming Requests");
             List<UpcomingBet> upcomingBets = new ArrayList<>();
             String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP";
@@ -151,8 +153,6 @@ public class RestAPIController {
             if(!botSession.isRunning()){
                 registerBot(telegramBot);
             }
-
-            log.info("{} Home wins total", upcomingBetService.getHomewins());
 
             log.info("{} NEW GAMES TO BET!", upcomingBets.size());
             telegramBot.chunkMessage("All Filters", upcomingBets, "All Markets", "requested bookies", false);
