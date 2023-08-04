@@ -14,6 +14,7 @@ public class TestRequest implements Serializable {
     private Double maxValue;
     private Double kellyCriteria;
     private Double maxKellyCriteria;
+    private Double minKellyCriteriaAccepted;
     private Double kellyFactor;
     private Double myStake;
     private Double oddsPercentage;
@@ -21,11 +22,28 @@ public class TestRequest implements Serializable {
     private boolean countCups;
     private boolean openingOdds;
     private boolean compareToPinnacle;
+    private Double maxPinnaclePercentageOdds;
     private int minGamesPlayed;
     private int maxProgress;
     private String country;
     private String startDate;
     private String endDate;
+
+    public Double getMinKellyCriteriaAccepted() {
+        return minKellyCriteriaAccepted;
+    }
+
+    public void setMinKellyCriteriaAccepted(Double minKellyCriteriaAccepted) {
+        this.minKellyCriteriaAccepted = minKellyCriteriaAccepted;
+    }
+
+    public Double getMaxPinnaclePercentageOdds() {
+        return maxPinnaclePercentageOdds;
+    }
+
+    public void setMaxPinnaclePercentageOdds(Double maxPinnaclePercentageOdds) {
+        this.maxPinnaclePercentageOdds = maxPinnaclePercentageOdds;
+    }
 
     public Double getOddsPercentage() {
         return oddsPercentage;
