@@ -31,6 +31,7 @@ public class TestResponse implements Serializable {
     private String startDate;
     private String endDate;
     private List<TestedGame> testedGames;
+    private Double avgStake;
 
     public TestResponse(){}
 
@@ -258,6 +259,14 @@ public class TestResponse implements Serializable {
 
     public void setMaxKellyCriteria(Double maxKellyCriteria) {
         this.maxKellyCriteria = maxKellyCriteria;
+    }
+
+    public Double getAvgStake() {
+        return avgStake;
+    }
+
+    public void setAvgStake(Double avgStake) {
+        this.avgStake = avgStake;
     }
 
     @Override

@@ -118,7 +118,7 @@ public class TestService {
                                 if(req.getOddsPercentage()!= 1.00){
                                     kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), req.getOddsPercentage());
                                 }
-                                if(kellyCriteriaCalc >= req.getKellyCriteria() && kellyCriteriaCalc <= req.getMaxKellyCriteria()){
+                                if(kellyCriteriaCalc >= req.getMinKellyCriteriaAccepted() && kellyCriteriaCalc <= req.getMaxKellyCriteria() && (!req.isCompareToPinnacle() || (req.isCompareToPinnacle() && checkPinnacle(betGameDTO, bookie, req.getMaxPinnaclePercentageOdds())))){
                                     Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*req.getKellyFactor())) : myStake;
                                     if (betGameDTO.isResult()) {
                                         wins++;
@@ -204,7 +204,9 @@ public class TestService {
         log.info("Total market games " + marketGames.size());
         log.info("Total games to test " + gamesToTest.size());
         if(!gamesToTest.isEmpty()){
-            executeTest(response, gamesToTest, request.isOpeningOdds(), request.getBookie(), request.getKellyCriteria(), request.getMaxKellyCriteria(), request.getKellyFactor(),request.getMyStake(),request.getMinGamesPlayed(), request.getOddsPercentage(), request.isCompareToPinnacle());
+            executeTest(response, gamesToTest, request.isOpeningOdds(), request.getBookie(), request.getKellyCriteria(), request.getMaxKellyCriteria(),
+                    request.getKellyFactor(),request.getMyStake(),request.getMinGamesPlayed(), request.getOddsPercentage(), request.isCompareToPinnacle(),
+                    request.getMinKellyCriteriaAccepted(), request.getMaxPinnaclePercentageOdds());
         }
         return response;
     }
@@ -250,7 +252,7 @@ public class TestService {
 
     }
 
-    private void executeTest(TestResponse response, List<BetGameDTO> gamesToTest, boolean opening, String bookie, Double kellyCriteria, Double maxKellyCriteria, Double kellyFactor, Double myStake,int minGamesPlayed, Double oddsPercentage, boolean compareToPinnacle){
+    private void executeTest(TestResponse response, List<BetGameDTO> gamesToTest, boolean opening, String bookie, Double kellyCriteria, Double maxKellyCriteria, Double kellyFactor, Double myStake,int minGamesPlayed, Double oddsPercentage, boolean compareToPinnacle, Double minKCAccepted, Double pinnyPercentageOdds){
         List<TestedGame> testedGames = new ArrayList<>();
         int wins = 0;
         int losses = 0;
@@ -267,7 +269,7 @@ public class TestService {
         if(kellyCriteria == 0.00){
             for(BetGameDTO betGameDTO : gamesToTest){
                 Double profitLoss = 0.0;
-                if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie)))){
+                if(betGameDTO.getHome_played() >= minGamesPlayed && betGameDTO.getAway_played() >= minGamesPlayed && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie,pinnyPercentageOdds)))){
                     Double oddsToCalculate = calculateOdds(opening,bookie, betGameDTO) * oddsPercentage;
                     if(betGameDTO.isResult()){
                         wins++;
@@ -283,7 +285,7 @@ public class TestService {
                     currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                     maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                     if(compareToPinnacle){
-                        if(checkPinnacle(betGameDTO, bookie)){
+                        if(checkPinnacle(betGameDTO, bookie, pinnyPercentageOdds)){
                             testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
                                     betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
                             betNo++;
@@ -307,7 +309,7 @@ public class TestService {
                         if(oddsPercentage!= 1.00){
                             kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, opening,oddsPercentage);
                         }
-                        if (kellyCriteriaCalc >= (kellyCriteria) && kellyCriteriaCalc <= maxKellyCriteria && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie)))) {
+                        if (kellyCriteriaCalc >= (minKCAccepted) && kellyCriteriaCalc <= maxKellyCriteria && (!compareToPinnacle || (compareToPinnacle && checkPinnacle(betGameDTO, bookie, pinnyPercentageOdds)))) {
                             Double amountStaked = isKellyFactorConsidered? myStake * ((kellyCriteriaCalc*100*kellyFactor)) : myStake;
                             if (betGameDTO.isResult()) {
                                 wins++;
@@ -335,6 +337,7 @@ public class TestService {
         response.setMaxDrawdown(BigDecimalRoundDoubleMain.roundDouble(maxDrawdown, 2));
         response.setMaxProfit(BigDecimalRoundDoubleMain.roundDouble(maxProfit,2));
         response.setRoi(BigDecimalRoundDoubleMain.roundDouble((profit/staked) * 100, 2));
+        response.setAvgStake(BigDecimalRoundDoubleMain.roundDouble((staked)/(wins+losses), 2));
         response.setWins(wins);
         response.setLosses(losses);
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit,2));
@@ -344,11 +347,11 @@ public class TestService {
 
     }
 
-    private boolean checkPinnacle(BetGameDTO betGameDTO, String bookie){
+    private boolean checkPinnacle(BetGameDTO betGameDTO, String bookie, Double pinnaclePercentage){
 
-        boolean isPinnacleHigher1xOrNull = betGameDTO.getOpening_1xbet_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_1xbet_odds()));
-        boolean isPinnacleHigherOrNull = betGameDTO.getOpening_b365_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_b365_odds()));
-        boolean isPinnacleHigherOr365Null = betGameDTO.getOpening_b365_odds() != null && betGameDTO.getOpening_pinnacle_odds() != null &&(betGameDTO.getOpening_pinnacle_odds() <= betGameDTO.getOpening_b365_odds());
+        boolean isPinnacleHigher1xOrNull = betGameDTO.getOpening_1xbet_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= (betGameDTO.getOpening_1xbet_odds()*pinnaclePercentage)));
+        boolean isPinnacleHigherOrNull = betGameDTO.getOpening_b365_odds() != null && (betGameDTO.getOpening_pinnacle_odds() == null || (betGameDTO.getOpening_pinnacle_odds() <= (betGameDTO.getOpening_b365_odds()*pinnaclePercentage)));
+        boolean isPinnacleHigherOr365Null = betGameDTO.getOpening_b365_odds() != null && betGameDTO.getOpening_pinnacle_odds() != null &&(betGameDTO.getOpening_pinnacle_odds() <= (betGameDTO.getOpening_b365_odds()*pinnaclePercentage));
         if(bookie.equals(Bookmakers.BET365.getName()) && (isPinnacleHigherOrNull)){
             return true;
         } else if((bookie.equals(Bookmakers.PINNACLE.getName()) && (isPinnacleHigherOr365Null))){

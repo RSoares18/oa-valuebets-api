@@ -87,8 +87,10 @@ public class RestAPIController {
             currentPage++;
         }
 
-
-        log.info("[OA SERVICE] Inserted: {} games in the DB", (betGameService.getTotalRecords()-existingRecords));
+        int totalGamesInserted = betGameService.getTotalRecords()-existingRecords;
+        telegramBot.sendMessage("[OA SERVICE] Inserted:" + totalGamesInserted + "games in the DB");
+        telegramBot.onClosing();
+        log.info("[OA SERVICE] Inserted: {} games in the DB", totalGamesInserted);
         return allGames;
     }
 
@@ -96,7 +98,8 @@ public class RestAPIController {
     public List<UpcomingBet> getUpcoming(@RequestBody FilterRequest filterRequest) throws UnsupportedEncodingException {
         try{
             List<UpcomingBet> upcomingBets = new ArrayList<>();
-            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP" + MARKET_EXTENSION + filterRequest.getMarket();
+            String marketAbbv = MarketMapper.getAbbvBykey(filterRequest.getMarket());
+            String uri = "https://data.oddalerts.com/api/value/upcoming?api_token=uV9gMykWc2GZ3DRvrq39jyNRahLo5lOYlT8P68JIwcW1mZGsbQ6zNQSqLkhP" + MARKET_EXTENSION + marketAbbv;
             RestTemplate restTemplate = new RestTemplate();
             HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(uri, HashMap.class);
             int pages = (Integer) globalInfo.get("info").get("pages");
@@ -208,6 +211,15 @@ public class RestAPIController {
         }
 
         log.info("FINISHED scheduled upcoming request");
+        stopBotSession();
+    }
+
+    @Scheduled (cron="0 20 12 * * *")
+    public void runResults() throws UnsupportedEncodingException {
+        registerBot(telegramBot);
+        log.info("STARTED getting latest results...");
+        getResults();
+        log.info("FINISHED getting latest results");
         stopBotSession();
     }
 

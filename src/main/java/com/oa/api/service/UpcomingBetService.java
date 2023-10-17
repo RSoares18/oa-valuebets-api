@@ -22,7 +22,7 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
-    private final static Double BANKROLL = 1100.0;
+    private final static Double BANKROLL = 1350.0;
     private final static Double KELLY_FRACTIONAL = 0.04;
 
     String bookie;
@@ -214,6 +214,8 @@ public class UpcomingBetService {
         if(bookie.equals(Bookmakers.PINNACLE.getName())){
             bet.setOpening1xOdds(betGameDTO.getOpening_1xbet_odds() != null? betGameDTO.getOpening_1xbet_odds() : 0.00);
             bet.setOpening365Odds(betGameDTO.getOpening_b365_odds() != null? betGameDTO.getOpening_b365_odds() : 0.00);
+        } else {
+            bet.setOpeningPinnacleOdds(betGameDTO.getOpening_pinnacle_odds() != null? betGameDTO.getOpening_pinnacle_odds() : 0.00);
         }
 
         bet.setBookmaker(bookie);

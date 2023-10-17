@@ -14,9 +14,9 @@ public class UpcomingRequests {
         FilterRequest oldUndersRequest = new FilterRequest("Unders 2.70-30-20", 3,"Bet365", "u25_probability", 2.70, 50.00,30.00,20.00,10000.00,0.00,false, false,90);
         FilterRequest undersRequest = new FilterRequest("Unders 85% Odds", 3,"Bet365", "u25_probability", 2.00, 50.00,30.00,35.00,10000.00,0.00,false, false,90);
         FilterRequest undersRequestPinnacle = new FilterRequest("Unders Pinnacle", 0,"Pinnacle", "u25_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
-        FilterRequest unders35RequestPinnacle = new FilterRequest("Unders 3.5 Pinnacle", 0,"Pinnacle", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
-        FilterRequest unders35Request1xBet = new FilterRequest("Unders 3.5 1X", 0,"1xBet", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
-        FilterRequest unders35Request365 = new FilterRequest("Unders 3.5 365", 0,"Bet365", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
+        FilterRequest unders35RequestPinnacle = new FilterRequest("Unders 3.5 Pinnacle", 3,"Pinnacle", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
+        FilterRequest unders35Request1xBet = new FilterRequest("Unders 3.5 1X", 3,"1xBet", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
+        FilterRequest unders35Request365 = new FilterRequest("Unders 3.5 365", 3,"Bet365", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
         FilterRequest unders35RequestWH = new FilterRequest("Unders 3.5 WH", 0,"WilliamHill", "u35_probability", 1.50, 50.00,30.00,0.00,10000.00,0.15,false, false,90);
         FilterRequest homeWinsRequest = new FilterRequest("Home Wins 2.50-40-0.20", 3,"Bet365", "home_win_probability", 2.50, 50.00,40.00,0.00,10000.00,0.20,false, false,90);
         FilterRequest homeWinsRequest1x = new FilterRequest("Home Wins 2.50-30-0.20", 3,"1xBet", "home_win_probability", 2.50, 50.00,30.00,0.00,10000.00,0.20,false, false,90);

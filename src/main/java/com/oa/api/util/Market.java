@@ -13,7 +13,9 @@ public enum Market {
     UNDER_35("8", "u35_probability"),
     OVER_35("9", "o35_probability"),
     HOME_O15("10", "home_goals_15_probability"),
-    AWAY_O15("11", "away_goals_15_probability")
+    AWAY_O15("11", "away_goals_15_probability"),
+    OVER_15("12", "o15_probability"),
+    UNDER_15("13", "u15_probability")
     ;
 
     private String id;
