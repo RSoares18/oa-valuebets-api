@@ -11,10 +11,8 @@ import org.springframework.stereotype.Service;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TestService {
@@ -597,6 +595,11 @@ public class TestService {
     }
 
     private boolean criteriaMatch(BetGameDTO game, TestRequest request, Long start, Long end){
+        List<String> pred = new ArrayList<>();
+        if(request.getPredictability() != null){
+            pred = Arrays.stream(request.getPredictability().split(",")).collect(Collectors.toList());
+        }
+
 
         return game.getProbability() != null
                 && (game.getCompetition_progress() == null || game.getCompetition_progress() <= request.getMaxProgress())
@@ -604,6 +607,7 @@ public class TestService {
                 && (request.isCountCups() || game.isCompetition_cup()==request.isCountCups())
                 && (request.isCountFriendlies() || game.isCompetition_friendly()==request.isCountFriendlies())
                 && ((request.getCountry() == null || request.getCountry().isEmpty()) || request.getCountry().equalsIgnoreCase(game.getCompetition_country()))
+                && (pred.isEmpty() || pred.contains(game.getCompetition_predictability()))
                 && validDate(game, start, end);
     }
 

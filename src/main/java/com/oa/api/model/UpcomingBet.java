@@ -28,6 +28,7 @@ public class UpcomingBet {
     private Double stake;
     private int competitionProgress;
     private Long unix;
+    private String predictability;
 
     public UpcomingBet(String competition,String bookmaker, Double diffMovement,String id, String dateKO,Double openingOdds,String market, String homeTeam, String awayTeam, Double ourOdds, Double bookieOdds, Double value, Double kellyFactor, Double probability) {
         this.competition = competition;
@@ -47,6 +48,14 @@ public class UpcomingBet {
     }
 
     public UpcomingBet() {
+    }
+
+    public String getPredictability() {
+        return predictability;
+    }
+
+    public void setPredictability(String predictability) {
+        this.predictability = predictability;
     }
 
     public Double getOpeningPinnacleOdds() {
@@ -227,6 +236,7 @@ public class UpcomingBet {
                 "\uD83D\uDCDA Bookmaker: " + bookmaker + "\n" +
                 "\uD83C\uDFC6 " + competition +  "\n" +
                 "\uD83C\uDFC1 Progress: " + competitionProgress +  "% \n" +
+                "\uD83D\uDCBB Predictability: " + predictability + "\n" +
                 "\u26BD " + homeTeam + " vs " + awayTeam + "\n" +
                 "\uD83D\uDCBB Probability: " + probability + "% " + "(" + ourOdds + ")" + "\n" +
                 "\u26A1 Current Odds: " + bookieOdds + " (" + diffMovement + "%) " + "\n" +
@@ -234,15 +244,15 @@ public class UpcomingBet {
                         showFor365Or1xBetRequests(bookmaker, market, probability*0.01) +
                         showForPinnacleRequests(bookmaker, market, probability*0.01) +
                 "\uD83D\uDCC8 Value: " + BigDecimalRoundDoubleMain.roundDouble(value,2) + "%" + "\n" +
-                "\uD83D\uDCCA Opening Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(openingKellyFactor,3) + "\n" +
-                "\uD83D\uDCCA Current Kelly Factor: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n" +
+                "\uD83D\uDCCA Opening Kelly Criteria: " + BigDecimalRoundDoubleMain.roundDouble(openingKellyFactor,3) + "\n" +
+                "\uD83D\uDCCA Current Kelly Criteria: " + BigDecimalRoundDoubleMain.roundDouble(kellyFactor,3) + "\n" +
                 "\uD83D\uDCB2 Stake: " + stake + "€" + "\n\n\n\n";
     }
 
     private String showFor365Or1xBetRequests(String bookmaker, String market, Double probability){
         if((bookmaker.equals(Bookmakers.ONEXBET.getName()) || bookmaker.equals(Bookmakers.BET365.getName()))){
             if(MarketMapper.getKeyByName(market).equals(Market.AWAY_WIN.getName())){
-                double minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.15-probability) )+ 1,2);
+                double minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.20-probability) )+ 1,2);
                 return "\u2797 Min. Odds (KC): " + minKCOdds + "\n";
             }
             if(MarketMapper.getKeyByName(market).equals(Market.HOME_WIN.getName())){
@@ -260,13 +270,14 @@ public class UpcomingBet {
     }
 
     private String showForPinnacleRequests(String bookmaker, String market, Double probability){
+        String finalString = "";
         double minKCOdds = 0;
         if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && MarketMapper.getKeyByName(market).equals(Market.HOME_WIN.getName())){
             minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.20-probability) )+ 1,2);
         }
 
         if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && MarketMapper.getKeyByName(market).equals(Market.AWAY_WIN.getName())){
-            minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.15-probability) )+ 1,2);
+            minKCOdds = BigDecimalRoundDoubleMain.roundDouble(((probability - 1)/(0.20-probability) )+ 1,2);
         }
 
         if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && MarketMapper.getKeyByName(market).equals(Market.UNDER_35.getName())){
@@ -276,23 +287,14 @@ public class UpcomingBet {
             String line365 = opening365Odds != null && opening365Odds != 0.0 ? "\u2797 Bet365 Opening Odd: " + opening365Odds + "(Min KC Odds " + minKCOdds + ")" + "\n" : "";
             String line1x = opening1xOdds != null && opening1xOdds != 0.0 ? "\u2797 1xBet Opening Odd: " + opening1xOdds + "(Min KC Odds " + minKCOdds + ")" + "\n" : "";
             if(bookmaker.equals(Bookmakers.PINNACLE.getName()) && !MarketMapper.getKeyByName(market).equals(Market.UNDER_35.getName())){
-                return line365 + line1x;
+                finalString = line365 + line1x;
             }
         }
 
         if(minKCOdds != 0){
-            return "\u2797 Min. Odds (KC): " + minKCOdds + "\n";
+            finalString = finalString + "\u2797 Min. Odds (KC): " + minKCOdds + "\n";
         }
 
-        return "";
-    }
-
-    private double getLower(Double valueA, Double valueB){
-        if(valueA > valueB){
-            return valueB;
-        } else {
-            return valueA;
-        }
-
+        return finalString;
     }
 }

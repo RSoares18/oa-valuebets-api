@@ -13,13 +13,15 @@ public class FilterRequest implements Serializable {
     private Double minValue;
     private Double maxValue;
     private Double kellyFactor;
+    private Double minKellyFactor;
     private boolean countFriendlies;
     private boolean countCups;
     private int minGamesPlayed;
     private int maxProgress;
+    private String predictability;
 
     public FilterRequest(String filterName,int minGamesPlayed,String bookie, String market, Double minOdds, Double maxOdds, Double minProbability,
-                         Double minValue, Double maxValue, Double kellyFactor, boolean countFriendlies, boolean countCups, int maxProgress) {
+                         Double minValue, Double maxValue, Double kellyFactor, Double minKellyFactor, boolean countFriendlies, boolean countCups, int maxProgress, String predictability) {
         this.filterName = filterName;
         this.bookie = bookie;
         this.market = market;
@@ -33,6 +35,23 @@ public class FilterRequest implements Serializable {
         this.countCups = countCups;
         this.minGamesPlayed = minGamesPlayed;
         this.maxProgress = maxProgress;
+        this.predictability = predictability;
+    }
+
+    public Double getMinKellyFactor() {
+        return minKellyFactor;
+    }
+
+    public void setMinKellyFactor(Double minKellyFactor) {
+        this.minKellyFactor = minKellyFactor;
+    }
+
+    public String getPredictability() {
+        return predictability;
+    }
+
+    public void setPredictability(String predictability) {
+        this.predictability = predictability;
     }
 
     public String getFilterName() {

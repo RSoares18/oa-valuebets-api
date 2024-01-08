@@ -28,6 +28,15 @@ public class TestRequest implements Serializable {
     private String country;
     private String startDate;
     private String endDate;
+    private String predictability;
+
+    public String getPredictability() {
+        return predictability;
+    }
+
+    public void setPredictability(String predictability) {
+        this.predictability = predictability;
+    }
 
     public Double getMinKellyCriteriaAccepted() {
         return minKellyCriteriaAccepted;

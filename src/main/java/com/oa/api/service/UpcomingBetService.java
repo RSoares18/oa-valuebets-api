@@ -22,7 +22,7 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
-    private final static Double BANKROLL = 1350.0;
+    private final static Double BANKROLL = 1500.0;
     private final static Double KELLY_FRACTIONAL = 0.04;
 
     String bookie;
@@ -70,8 +70,9 @@ public class UpcomingBetService {
         List<UpcomingBet> upcomingBets = new ArrayList<>();
         Double kellyFactor = request.getKellyFactor();
 
+        Set<String> requestPredict = new HashSet<>(Arrays.asList(request.getPredictability().split(",")));
 
-        upcomingGames = upcomingGames.stream().filter(betGameDTO -> betGameDTO.getMarket().equals(request.getMarket())).collect(Collectors.toList());
+        upcomingGames = upcomingGames.stream().filter(betGameDTO -> (betGameDTO.getMarket().equals(request.getMarket()) && requestPredict.contains(betGameDTO.getCompetition_predictability()))).collect(Collectors.toList());
 
         if(kellyFactor == 0.00){
             Double openingKellyFactor = kellyFactor;
@@ -156,7 +157,7 @@ public class UpcomingBetService {
                     if(criteriaMatch(betGameDTO,request)){
 
                             Double value = calculateValue(currentOdds, betGameDTO.getOur_odds());
-                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request) && checkPinnacle(openingOdds, bookie, betGameDTO.getOpening_b365_odds(), betGameDTO.getOpening_1xbet_odds())){
+                            if(matchConditions(openingOdds, currentOdds,value, kellyFactorCalc, openingKellyFactorCalc, request) && checkPinnacle(openingOdds, bookie, betGameDTO.getOpening_b365_odds(), betGameDTO.getOpening_1xbet_odds(),request.getMarket())){
                                 upcomingBets.add(convertBetGameToUpcoming(betGameDTO, currentOdds, openingOdds, value, kellyFactorCalc, openingKellyFactorCalc,bookie));
                             }
                         }
@@ -210,6 +211,7 @@ public class UpcomingBetService {
         bet.setId(String.valueOf(betGameDTO.getGame_id()));
         bet.setDateKO(betGameDTO.getKo_human());
         bet.setOpeningOdds(opening);
+        bet.setPredictability(betGameDTO.getCompetition_predictability());
 
         if(bookie.equals(Bookmakers.PINNACLE.getName())){
             bet.setOpening1xOdds(betGameDTO.getOpening_1xbet_odds() != null? betGameDTO.getOpening_1xbet_odds() : 0.00);
@@ -231,17 +233,23 @@ public class UpcomingBetService {
         return (diff/ourOdds) * 100.00;
     }
 
-    private boolean checkPinnacle(Double currentRequestOpeningOdds, String bookmaker, Double opening365odds, Double opening1xOdds){
+    private boolean checkPinnacle(Double currentRequestOpeningOdds, String bookmaker, Double opening365odds, Double opening1xOdds, String market){
         if(!bookmaker.equals(Bookmakers.PINNACLE.getName())){
             return true;
         }
         else{
+            if(market.equals(Market.UNDER_35.getName())){
+                return true;
+            }
+            //RETURN TRUE FOR 1X EVEN IF PINNY IS HIGHER
+            if(opening1xOdds != null && opening1xOdds <= currentRequestOpeningOdds){
+                return true;
+            }
+
             if(opening365odds != null && opening365odds <= currentRequestOpeningOdds){
                 return false;
             }
-            if(opening1xOdds != null && opening1xOdds <= currentRequestOpeningOdds){
-                return false;
-            }
+
         }
         return true;
 
