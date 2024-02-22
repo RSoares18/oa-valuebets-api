@@ -31,6 +31,7 @@ public class FilterRequest implements Serializable {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.kellyFactor = kellyFactor;
+        this.minKellyFactor = minKellyFactor;
         this.countFriendlies = countFriendlies;
         this.countCups = countCups;
         this.minGamesPlayed = minGamesPlayed;

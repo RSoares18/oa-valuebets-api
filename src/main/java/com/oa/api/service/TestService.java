@@ -210,32 +210,71 @@ public class TestService {
     }
 
     private Double calculateKellyCriteria1xBet(BetGameDTO betGameDTO, boolean opening){
-        Double b_decimal_odds = (opening ? betGameDTO.getOpening_1xbet_odds() : betGameDTO.getLatest_1xbet_odds()) -1.00;
+        if(!opening && betGameDTO.getPeak_1xbet_odds() == null){
+            return 0.0;
+        }
+
+        if(opening && betGameDTO.getOpening_1xbet_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? betGameDTO.getOpening_1xbet_odds() : betGameDTO.getPeak_1xbet_odds()) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
     private Double calculateKellyCriteriaBet365(BetGameDTO betGameDTO, boolean opening){
-        Double b_decimal_odds = (opening ? betGameDTO.getOpening_b365_odds() : betGameDTO.getLatest_b365_odds()) -1.00;
+        if(!opening && betGameDTO.getPeak_b365_odds() == null){
+            return 0.0;
+        }
+        if(opening && betGameDTO.getOpening_b365_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? betGameDTO.getOpening_b365_odds() : betGameDTO.getPeak_b365_odds()) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
     private Double calculateKellyCriteriaPinnacle(BetGameDTO betGameDTO, boolean opening){
-        Double b_decimal_odds = (opening ? betGameDTO.getOpening_pinnacle_odds() : betGameDTO.getLatest_pinnacle_odds()) -1.00;
+        if(!opening && betGameDTO.getPeak_pinnacle_odds() == null){
+            return 0.0;
+        }
+        if(opening && betGameDTO.getOpening_pinnacle_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? betGameDTO.getOpening_pinnacle_odds() : betGameDTO.getPeak_pinnacle_odds()) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
     private Double calculateKellyCriteria1xBetWithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
-        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_1xbet_odds()*oddsPercentage) : (betGameDTO.getLatest_1xbet_odds()*oddsPercentage)) -1.00;
+        if(!opening && betGameDTO.getPeak_1xbet_odds() == null){
+            return 0.0;
+        }
+
+        if(opening && betGameDTO.getOpening_1xbet_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_1xbet_odds()*oddsPercentage) : (betGameDTO.getPeak_1xbet_odds()*oddsPercentage)) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
     private Double calculateKellyCriteriaBet365WithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
-        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_b365_odds()*oddsPercentage) : (betGameDTO.getLatest_b365_odds()*oddsPercentage)) -1.00;
+        if(!opening && betGameDTO.getPeak_b365_odds() == null){
+            return 0.0;
+        }
+        if(opening && betGameDTO.getOpening_b365_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_b365_odds()*oddsPercentage) : (betGameDTO.getPeak_b365_odds()*oddsPercentage)) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
     private Double calculateKellyCriteriaPinnacleWithPercentage(BetGameDTO betGameDTO, boolean opening, Double oddsPercentage){
-        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_pinnacle_odds() * oddsPercentage) : (betGameDTO.getLatest_pinnacle_odds()*oddsPercentage)) -1.00;
+
+        if(!opening && betGameDTO.getPeak_pinnacle_odds() == null){
+            return 0.0;
+        }
+        if(opening && betGameDTO.getOpening_pinnacle_odds() == null){
+            return 0.0;
+        }
+        Double b_decimal_odds = (opening ? (betGameDTO.getOpening_pinnacle_odds() * oddsPercentage) : (betGameDTO.getPeak_pinnacle_odds()*oddsPercentage)) -1.00;
         return calculateKelly(betGameDTO, b_decimal_odds);
     }
 
