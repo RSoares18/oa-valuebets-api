@@ -22,7 +22,7 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
-    private final static Double BANKROLL = 1750.0;
+    private final static Double BANKROLL = 2300.0;
     private final static Double KELLY_FRACTIONAL = 0.04;
 
     String bookie;

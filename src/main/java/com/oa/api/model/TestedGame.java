@@ -1,5 +1,7 @@
 package com.oa.api.model;
 
+import java.util.Date;
+
 public class TestedGame {
 
     private int betNo;
@@ -11,10 +13,12 @@ public class TestedGame {
     private Double profitLoss;
     private Double currentProfit;
 
+    private Long unix;
+
     public TestedGame() {
     }
 
-    public TestedGame(int betNo,String homeTeam, String awayTeam, String market, Double odds, Double stake, Double profitLoss, Double currentProfit) {
+    public TestedGame(int betNo,String homeTeam, String awayTeam, String market, Double odds, Double stake, Double profitLoss, Double currentProfit, Long unix) {
         this.betNo = betNo;
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
@@ -23,6 +27,15 @@ public class TestedGame {
         this.stake = stake;
         this.profitLoss = profitLoss;
         this.currentProfit = currentProfit;
+        this.unix = unix;
+    }
+
+    public Long getUnix() {
+        return unix;
+    }
+
+    public void setUnix(Long unix) {
+        this.unix = unix;
     }
 
     public int getBetNo() {
@@ -87,5 +100,24 @@ public class TestedGame {
 
     public void setCurrentProfit(Double currentProfit) {
         this.currentProfit = currentProfit;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Date(1712188800L *1000));
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "betNo=" + betNo +
+                ", homeTeam='" + homeTeam + '\'' +
+                ", awayTeam='" + awayTeam + '\'' +
+                ", market='" + market + '\'' +
+                ", odds=" + odds +
+                ", stake=" + stake +
+                ", profitLoss=" + profitLoss +
+                ", currentProfit=" + currentProfit +
+                ", unix=" + new Date(unix*1000) +
+                '}';
     }
 }

@@ -103,7 +103,7 @@ public class TestService {
                             currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                             maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                             testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
-                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss,betGameDTO.getUnix()));
                             betNo++;
                         }
                     } else {
@@ -132,7 +132,7 @@ public class TestService {
                                     currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                                     maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                                     testedGames.add(createTestedGame(betNo,oddsToCalculate, amountStaked, betGameDTO.getMarket(),
-                                            betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                            betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss,betGameDTO.getUnix()));
                                     betNo++;
                                 }
 
@@ -284,8 +284,8 @@ public class TestService {
         return ((bDecimalOdds*p_win)-q_lose)/bDecimalOdds;
     }
 
-    private TestedGame createTestedGame(int betNo,Double odds, Double stake, String market,String home, String away, Double currentProfit, Double profitLoss){
-        return new TestedGame(betNo,home, away,market, BigDecimalRoundDoubleMain.roundDouble(odds,2), BigDecimalRoundDoubleMain.roundDouble(stake, 2), BigDecimalRoundDoubleMain.roundDouble(profitLoss, 2), BigDecimalRoundDoubleMain.roundDouble(currentProfit, 2));
+    private TestedGame createTestedGame(int betNo,Double odds, Double stake, String market,String home, String away, Double currentProfit, Double profitLoss, Long unix){
+        return new TestedGame(betNo,home, away,market, BigDecimalRoundDoubleMain.roundDouble(odds,2), BigDecimalRoundDoubleMain.roundDouble(stake, 2), BigDecimalRoundDoubleMain.roundDouble(profitLoss, 2), BigDecimalRoundDoubleMain.roundDouble(currentProfit, 2), unix);
 
     }
 
@@ -324,12 +324,12 @@ public class TestService {
                     if(compareToPinnacle){
                         if(checkPinnacle(betGameDTO, bookie, pinnyPercentageOdds)){
                             testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
-                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss, betGameDTO.getUnix()));
                             betNo++;
                         }
                     } else {
                         testedGames.add(createTestedGame(betNo,oddsToCalculate, myStake, betGameDTO.getMarket(),
-                                betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss, betGameDTO.getUnix()));
                         betNo++;
                     }
 
@@ -362,7 +362,7 @@ public class TestService {
                             currentDrawdown = profit >= maxProfit ? 0.0 : profit - maxProfit;
                             maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown;
                             testedGames.add(createTestedGame(betNo,oddsToCalculate, amountStaked, betGameDTO.getMarket(),
-                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss));
+                                    betGameDTO.getHome_name(), betGameDTO.getAway_name(),profit, profitLoss, betGameDTO.getUnix()));
                             betNo++;
 
                         }
@@ -380,7 +380,7 @@ public class TestService {
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit,2));
         response.setNumBets(wins+losses);
         response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double)wins / response.getNumBets()) * 100,2) : 0.00);
-        response.setTestedGames(testedGames);
+        response.setTestedGames(testedGames.stream().sorted(Comparator.comparingLong(TestedGame::getUnix)).collect(Collectors.toList()));
 
     }
 

@@ -199,7 +199,7 @@ public class RestAPIController {
         }
     }
 
-    @Scheduled (cron="0 0/5 * * * *")
+    @Scheduled (cron="0 0/1 * * * *")
     public void runRequests() throws UnsupportedEncodingException {
         registerBot(telegramBot);
         log.info("STARTED scheduled upcoming request...");
