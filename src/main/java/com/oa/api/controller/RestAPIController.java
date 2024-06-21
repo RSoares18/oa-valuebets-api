@@ -1,5 +1,7 @@
 package com.oa.api.controller;
 
+import com.oa.api.bankroll.BankrollService;
+import com.oa.api.bankroll.model.BetsStatement;
 import com.oa.api.entity.BetGameDTO;
 import com.oa.api.entity.RegisteredBetDTO;
 import com.oa.api.model.*;
@@ -22,6 +24,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import javax.annotation.PostConstruct;
+
 
 import java.io.UnsupportedEncodingException;
 
@@ -52,6 +55,9 @@ public class RestAPIController {
 
     @Autowired
     UpcomingBetService upcomingBetService;
+
+    @Autowired
+    BankrollService bankrollService;
 
     private DefaultBotSession botSession;
 
@@ -187,6 +193,14 @@ public class RestAPIController {
     @GetMapping(value ="/market")
     public List<BetGameDTO> getTestResult(@RequestParam String market, @RequestParam Double minOdds){
         return betGameService.getGamesByMarket(market).stream().filter(betGameDTO -> betGameDTO.getOpening_1xbet_odds() != null && betGameDTO.getOpening_1xbet_odds() >= minOdds).collect(Collectors.toList());
+    }
+
+    @GetMapping(value ="/profitloss/{startDate}/{endDate}/{includeGames}")
+    public BetsStatement getTestResult(@PathVariable String startDate, @PathVariable String endDate, @PathVariable boolean includeGames){
+        BetsStatement statement = bankrollService.calculateStatement(startDate, endDate, includeGames);
+        telegramBot.sendMessage(statement.toString());
+        telegramBot.onClosing();
+        return statement;
     }
 
     private void registerBot(OABot bot){

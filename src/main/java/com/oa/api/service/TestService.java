@@ -83,10 +83,11 @@ public class TestService {
 
         for (BetGameDTO betGameDTO : gamesToTest) {
             for (TestRequest req : requests) {
-                if (req.getMarket().equals(betGameDTO.getMarket())) {
+                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                if (req.getMarket().equals(betGameDTO.getMarket()) && oddsToCalculate >= req.getMinOdds() && oddsToCalculate <= req.getMaxOdds()) {
                     if (req.getKellyCriteria() == 0.00) {
                         Double profitLoss = 0.0;
-                        Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                        oddsToCalculate = oddsToCalculate * req.getOddsPercentage();
                         if (betGameDTO.getHome_played() >= req.getMinGamesPlayed() && betGameDTO.getAway_played() >= req.getMinGamesPlayed()) {
                             if (betGameDTO.isResult()) {
                                 wins++;
@@ -112,7 +113,7 @@ public class TestService {
                             Double profitLoss = 0.0;
                             Double kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), 1.00);
                             if (kellyCriteriaCalc >= req.getKellyCriteria() && kellyCriteriaCalc <= req.getMaxKellyCriteria()) {
-                                Double oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
+                                oddsToCalculate = calculateOdds(req.isOpeningOdds(), bookie, betGameDTO) * req.getOddsPercentage();
                                 if(req.getOddsPercentage()!= 1.00){
                                     kellyCriteriaCalc = calculateKellyFactorCalc(bookie, betGameDTO, req.isOpeningOdds(), req.getOddsPercentage());
                                 }
@@ -380,7 +381,7 @@ public class TestService {
         response.setProfit(BigDecimalRoundDoubleMain.roundDouble(profit,2));
         response.setNumBets(wins+losses);
         response.setHitRate(wins > 0 ? BigDecimalRoundDoubleMain.roundDouble(((double)wins / response.getNumBets()) * 100,2) : 0.00);
-        response.setTestedGames(testedGames.stream().sorted(Comparator.comparingLong(TestedGame::getUnix)).collect(Collectors.toList()));
+        response.setTestedGames(testedGames);
 
     }
 

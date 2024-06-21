@@ -22,7 +22,7 @@ public class UpcomingBetService {
 
     private BetGameConverter betGameConverter = new BetGameConverter();
 
-    private final static Double BANKROLL = 2300.0;
+    public final static Double BANKROLL = 2300.0;
     private final static Double KELLY_FRACTIONAL = 0.04;
 
     String bookie;
@@ -249,7 +249,7 @@ public class UpcomingBetService {
             }
 
             if(opening365odds != null && opening365odds <= currentRequestOpeningOdds){
-                return false;
+                return true;
             }
 
         }
