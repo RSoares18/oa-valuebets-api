@@ -196,10 +196,10 @@ public class RestAPIController {
     }
 
     @GetMapping(value ="/profitloss/{startDate}/{endDate}/{includeGames}")
-    public BetsStatement getTestResult(@PathVariable String startDate, @PathVariable String endDate, @PathVariable boolean includeGames){
-        BetsStatement statement = bankrollService.calculateStatement(startDate, endDate, includeGames);
-        telegramBot.sendMessage(statement.toString());
-        telegramBot.onClosing();
+    public BetsStatement getTestResult(@PathVariable String startDate, @PathVariable String endDate, @PathVariable String includeGames){
+        BetsStatement statement = bankrollService.calculateStatement(startDate, endDate, Boolean.parseBoolean(includeGames));
+        //telegramBot.sendMessage(statement.toString());
+        //telegramBot.onClosing();
         return statement;
     }
 

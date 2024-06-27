@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelly Stake Calculator</title>
+    <link rel="icon" href="apple-touch-icon.png" type="image/png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .calculator {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="calculator">
+    <h1>Kelly Stake Calculator</h1>
+    <div class="input-group">
+        <label for="bankroll">Bankroll:</label>
+        <input type="number" id="bankroll" step="50" min="0" required value="2300">
+    </div>
+    <div class="input-group">
+        <label for="winProbability">Win Probability (0-1):</label>
+        <input type="number" id="winProbability" step="0.01" min="0" max="1" required>
+    </div>
+    <div class="input-group">
+        <label for="winOdds">Win Odds:</label>
+        <input type="number" id="winOdds" step="0.01" min="1" required>
+    </div>
+    <div class="input-group">
+        <label for="kellyFractional">Kelly Fraction:</label>
+        <input type="number" id="kellyFractional" step="0.01" min="0" required value="0.04">
+    </div>
+    <button onclick="calculateKellyStake()">Calculate</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    function calculateKellyStake() {
+        const winProbability = parseFloat(document.getElementById('winProbability').value);
+        const winOdds = parseFloat(document.getElementById('winOdds').value);
+        const bankroll = parseFloat(document.getElementById('bankroll').value);
+        const kellyFractional = parseFloat(document.getElementById('kellyFractional').value);
+
+        if (isNaN(winProbability) || isNaN(winOdds) || winProbability < 0 || winProbability > 1 || winOdds <= 1) {
+            alert('Please enter valid inputs.');
+            return;
+        }
+
+        const kellyFraction = ((winProbability * (winOdds - 1)) - (1 - winProbability)) / (winOdds - 1);
+        const kellyFractionalCalc = kellyFraction * kellyFractional;
+        const kellyStake = kellyFractionalCalc*bankroll;
+        //const kellyStake = kellyFraction * 100;
+
+        document.getElementById('result').innerText = `Kelly Criteria: ${kellyFraction.toFixed(3)}\nKelly Stake: ${kellyStake.toFixed(2)}€`;
+    }
+</script>
+</body>
+</html>

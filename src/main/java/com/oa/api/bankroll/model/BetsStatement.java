@@ -106,9 +106,10 @@ public class BetsStatement {
                 "\u274C Losses: " + losses + "\n" +
                 "\uD83D\uDCC8 P/L U: " + profit_loss_units + "U" + "\n" +
                 "\uD83D\uDCB0 P/L €: " + profit_loss_money + "€" + "\n" +
-                 showGames(bets) +
-                "\uD83D\uDCCA ROI %: " + roi + "%" + "\n" +
-                "\uD83D\uDCB2 Staked €: " + staked + "€" + "\n";
+                        "\uD83D\uDCCA ROI %: " + roi + "%" + "\n" +
+                        "\uD83D\uDCB2 Staked €: " + staked + "€" + "\n" +
+                 showGames(bets);
+
     }
 
     private String removeUnwantedCharacters(String listString) {

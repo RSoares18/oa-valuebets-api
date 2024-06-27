@@ -39,7 +39,7 @@ public class BankrollService {
         int currentPage = 1;
         boolean listChanged = true;
 
-        while(listChanged){
+        while(listChanged || resultFilteredByDate.isEmpty()){
             listChanged = false;
             HashMap<String, HashMap<String, Object>> globalInfo = restTemplate.getForObject(URL_BETS+PAGE_EXTENSION+currentPage, HashMap.class);
             List<HashMap<String,Object>> result = (List<HashMap<String, Object>>) globalInfo.get("data");

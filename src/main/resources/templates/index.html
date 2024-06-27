@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Value Bets API Application</title>
+  <link rel="icon" href="apple-touch-icon.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #495057;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+    }
+    header {
+      background: #343a40;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      width: 100%;
+      position: fixed;
+      top: 0;
+    }
+    .menu-container {
+      background: #495057;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .menu-container a {
+      color: #fff;
+      text-decoration: none;
+      padding: 15px 20px;
+      display: block;
+      margin: 10px 0;
+      background: #6c757d;
+      border-radius: 4px;
+    }
+    .menu-container a:hover {
+      background: #5a6268;
+    }
+    .container {
+      padding: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Value Bets API Application</h1>
+</header>
+<div class="menu-container">
+  <a href="/profitloss">Resultados</a>
+  <a href="#" onclick="showSection('pendentes')">Pendentes</a>
+  <a href="/kellyCalculator">Calculadora Kelly</a>
+</div>
+<script>
+  function showSection(sectionId) {
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => section.classList.add('hidden'));
+    document.getElementById(sectionId).classList.remove('hidden');
+  }
+  // Default to showing the first section
+  //showSection('resultados');
+</script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!-- response.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados</title>
+    <link rel="icon" href="apple-touch-icon.png" type="image/png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            overflow: auto;
+        }
+        .response-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .response-container h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .response-container pre {
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+            text-align: left;
+        }
+
+        .response-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .response-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .response-list li:last-child {
+            border-bottom: none;
+        }
+        .response-key {
+            font-weight: bold;
+            color: #007BFF;
+        }
+        .response-value {
+            color: #333;
+        }
+
+        .response-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .response-table th, .response-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .response-table th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        .response-table tr:nth-child {
+            background-color: #f9f9f9;
+        }
+        .response-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        .response-table td {
+            font-size: 0.8em; /* Reduced font size for table content */
+        }
+
+        .won-row {
+            background-color: #d4edda; /* Green-ish background */
+            color: #155724; /* Dark green text */
+        }
+        .lost-row {
+            background-color: #f8d7da; /* Red-ish background */
+            color: #721c24; /* Dark red text */
+        }
+    </style>
+</head>
+<body>
+<div class="response-container">
+    <h2>Resultados:</h2>
+
+    <div id="responseDataContainer">
+        <!-- Response data will be displayed here -->
+    </div>
+    <br>
+
+    <h2>Jogos:</h2>
+
+    <table class="response-table">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Fixture</th>
+            <th>Bet</th>
+            <th>Odds</th>
+            <th>Result</th>
+            <th>Stake</th>
+            <th>P/L</th>
+        </tr>
+        </thead>
+        <tbody id="responseDataContainerTable">
+        <!-- Response data will be displayed here -->
+        </tbody>
+    </table>
+
+
+</div>
+<script>
+    //map markets
+    var marketIds = {
+        home : 'Home',
+        away : 'Away',
+        under_35: 'Under 3.5',
+        under_25: 'Under 2.5'
+    }
+    // Extract response data from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const responseData = JSON.parse(localStorage.getItem('responseData'));
+    console.log("data loaded:" + responseData);
+    //const responseData = JSON.parse(urlParams.get('data'));
+
+    const responseDataContainer = document.getElementById('responseDataContainer');
+
+    const responseDataContainerTable = document.getElementById('responseDataContainerTable');
+
+
+    // Display response data
+    const responseDataElement = document.getElementById('responseData');
+    //for (let key in responseData) {
+    // if (responseData.hasOwnProperty(key)) {
+
+    createListItem('startDate', "Data Início", "");
+    createListItem('endDate', "Data Fim", "");
+    createListItem('numBets', "Apostas", "");
+    createListItem('wins', "Ganhas", "");
+    createListItem('losses', "Perdidas", "");
+    createListItem('profit_loss_units', "Lucro Unidades", "U");
+    createListItem('profit_loss_money', "Lucro €", "€");
+    createListItem('roi', "ROI", "%");
+    createListItem('staked', "Apostado", "€");
+
+    const betsdata = responseData['bets'];
+    betsdata.forEach(function (arrayItem) {
+        const row = document.createElement('tr');
+        createTableRowWithContent(row, arrayItem);
+    });
+
+    function getValue(key) {
+        return marketIds[key];
+    }
+
+    function createTableRowWithContent(row, arrayItem){
+        var date = arrayItem.date;
+        var fixtureName = arrayItem.fixture_name;
+        var bet = getValue(arrayItem.bet);
+        var odds = arrayItem.odds;
+        var stake = arrayItem.stake.toFixed(2) + ' €';
+        var result = arrayItem.betResult.text;
+        var profit = arrayItem.betResult.profit.toFixed(2)+' €';
+
+        fillRowContent(row, date);
+        fillRowContent(row, fixtureName);
+        fillRowContent(row, bet);
+        fillRowContent(row, odds);
+        fillRowContentResult(row, result);
+        fillRowContent(row, stake);
+        fillRowContent(row, profit);
+
+        responseDataContainerTable.appendChild(row);
+    }
+
+    function fillRowContentResult(row, result){
+        if (result === 'Won') {
+            row.classList.add('won-row');
+        } else if (result === 'Lost') {
+            row.classList.add('lost-row');
+        }
+        // Create a cell for the value
+        const valueCell = document.createElement('td');
+        valueCell.textContent = result;
+        // Append the cells to the row
+        row.appendChild(valueCell);
+
+
+
+    }
+    function fillRowContent(row, value){
+        // Create a cell for the value
+        const valueCell = document.createElement('td');
+        valueCell.textContent = value;
+        // Append the cells to the row
+        row.appendChild(valueCell);
+
+
+    }
+
+    function createListItem(key, keyText, optSymbol){
+        // Create a list item
+        const listItem = document.createElement('li');
+
+        // Create a span for the key
+        const keySpan = document.createElement('span');
+        keySpan.classList.add('response-key');
+        keySpan.textContent = keyText + ' : ';
+
+        // Create a span for the value
+        const valueSpan = document.createElement('span');
+        valueSpan.classList.add('response-value');
+        valueSpan.textContent = responseData[key] + optSymbol;
+
+        // Append key and value spans to the list item
+        listItem.appendChild(keySpan);
+        listItem.appendChild(valueSpan);
+
+        // Append the list item to the container
+        responseDataContainer.appendChild(listItem);
+    }
+</script>
+</body>
+</html>
